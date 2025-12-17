@@ -1,0 +1,11 @@
+{
+    "platform": "django",
+    "django": {
+        "pythonversion" : "3.8",
+        "collectStatic" : true,
+        "compilemessages" : false,
+        "modifySettings" : true,
+        "timezone" : "Asia/Tehran"
+    },
+    "app": "ParsaJournal"
+}
