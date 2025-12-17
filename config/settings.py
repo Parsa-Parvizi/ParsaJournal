@@ -170,15 +170,26 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
 
-# LOG_DIR = BASE_DIR / "logs"
+LOG_DIR = BASE_DIR / "logs"
 # Logging Configuration
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'formatters': {'simple': {'format': '[{asctime}] {levelname} {name}: {message}', 'style': '{'}},
-#     'handlers': {'console': {'class': 'logging.StreamHandler', 'formatter': 'simple'}},
-#     'root': {'handlers': ['console'], 'level': 'INFO'},
-# }
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'admin_file': {  # This is the problematic handler
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': '/usr/src/app/logs/admin.log',
+        },
+        # Other handlers...
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['admin_file'],  # Remove or change this
+            'level': 'INFO',
+        },
+    },
+}
 
 
 # Pagination
