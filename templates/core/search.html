@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+{% load core_extras %}
+
+{% get_current_language as CURRENT_LANG %}
+
+{% block title %}
+{% if CURRENT_LANG == 'fa' %}
+نتایج جستجو{% if query %} - {{ query }}{% endif %} - {{ site_settings.site_name|localized_site_name }}
+{% else %}
+Search Results{% if query %} - {{ query }}{% endif %} - {{ site_settings.site_name|localized_site_name }}
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="article-title">{% if CURRENT_LANG == 'fa' %}نتایج جستجو{% else %}Search Results{% endif %}</h1>
+    
+    {% if query %}
+    <p>
+        {% if CURRENT_LANG == 'fa' %}
+        نتیجه جستجو برای: <strong>"{{ query }}"</strong>
+        {% else %}
+        Search results for: <strong>"{{ query }}"</strong>
+        {% endif %}
+    </p>
+    
+    {% if results %}
+    <!-- Articles -->
+    {% if results.articles %}
+    <section style="margin-top: 2rem;">
+        <h2 class="section-title">
+            {% if CURRENT_LANG == 'fa' %}
+            مقالات ({{ results.articles.count|localized_number }})
+            {% else %}
+            Articles ({{ results.articles.count }})
+            {% endif %}
+        </h2>
+        <div class="article-grid">
+            {% for article in results.articles %}
+            <article class="article-card">
+                {% if article.featured_image %}
+                <img src="{{ article.featured_image.url }}" alt="{{ article.image_alt|default:article.title }}" class="article-card-image">
+                {% endif %}
+                <div class="article-card-content">
+                    <div class="article-card-meta">
+                        <span>{{ article.published_at|localized_date:"F d, Y" }}</span> • 
+                        <span>{{ article.author.display_name }}</span>
+                    </div>
+                    <h3 class="article-card-title">
+                        <a href="{% url 'articles:article_detail' article.slug %}">{{ article.title }}</a>
+                    </h3>
+                    <p class="article-card-excerpt">{{ article.excerpt|truncatewords:20 }}</p>
+                    <div class="article-card-footer">
+                        <a href="{% url 'articles:article_detail' article.slug %}" class="btn">{% if CURRENT_LANG == 'fa' %}ادامه مطلب{% else %}Read More{% endif %}</a>
+                        <span class="views-pill">
+                            <span class="views-number">{{ article.views|localized_number }}</span>
+                            <span class="views-label">{% if CURRENT_LANG == 'fa' %}بازدید{% else %}views{% endif %}</span>
+                        </span>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+    
+    <!-- Books -->
+    {% if results.books %}
+    <section style="margin-top: 2rem;">
+        <h2 class="section-title">
+            {% if CURRENT_LANG == 'fa' %}
+            نقدهای کتاب ({{ results.books.count|localized_number }})
+            {% else %}
+            Book Reviews ({{ results.books.count }})
+            {% endif %}
+        </h2>
+        <div class="article-grid">
+            {% for book in results.books %}
+            <article class="article-card">
+                {% if book.cover_image %}
+                <img src="{{ book.cover_image.url }}" alt="{{ book.image_alt|default:book.book_title }}" class="article-card-image">
+                {% endif %}
+                <div class="article-card-content">
+                    <div class="article-card-meta">
+                        <span>{{ book.published_at|localized_date:"F d, Y" }}</span>
+                    </div>
+                    <h3 class="article-card-title">
+                        <a href="{% url 'reviews:book_detail' book.slug %}">{{ book.title }}</a>
+                    </h3>
+                    <p class="article-card-excerpt"><strong>{{ book.book_title }}</strong> {% if CURRENT_LANG == 'fa' %}نوشته{% else %}by{% endif %} {{ book.book_author }}</p>
+                    <div class="article-card-footer">
+                        <a href="{% url 'reviews:book_detail' book.slug %}" class="btn">{% if CURRENT_LANG == 'fa' %}خواندن نقد{% else %}Read Review{% endif %}</a>
+                        <span class="views-pill">
+                            <span class="views-number">{{ book.views|localized_number }}</span>
+                            <span class="views-label">{% if CURRENT_LANG == 'fa' %}بازدید{% else %}views{% endif %}</span>
+                        </span>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+    
+    <!-- Movies -->
+    {% if results.movies %}
+    <section style="margin-top: 2rem;">
+        <h2 class="section-title">
+            {% if CURRENT_LANG == 'fa' %}
+            نقدهای فیلم ({{ results.movies.count|localized_number }})
+            {% else %}
+            Movie Reviews ({{ results.movies.count }})
+            {% endif %}
+        </h2>
+        <div class="article-grid">
+            {% for movie in results.movies %}
+            <article class="article-card">
+                {% if movie.poster_image %}
+                <img src="{{ movie.poster_image.url }}" alt="{{ movie.image_alt|default:movie.movie_title }}" class="article-card-image">
+                {% endif %}
+                <div class="article-card-content">
+                    <div class="article-card-meta">
+                        <span>{{ movie.published_at|localized_date:"F d, Y" }}</span>
+                    </div>
+                    <h3 class="article-card-title">
+                        <a href="{% url 'reviews:movie_detail' movie.slug %}">{{ movie.title }}</a>
+                    </h3>
+                    <p class="article-card-excerpt">{{ movie.movie_title }} ({{ movie.year }})</p>
+                    <div class="article-card-footer">
+                        <a href="{% url 'reviews:movie_detail' movie.slug %}" class="btn">{% if CURRENT_LANG == 'fa' %}خواندن نقد{% else %}Read Review{% endif %}</a>
+                        <span class="views-pill">
+                            <span class="views-number">{{ movie.views|localized_number }}</span>
+                            <span class="views-label">{% if CURRENT_LANG == 'fa' %}بازدید{% else %}views{% endif %}</span>
+                        </span>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+    
+    {% if not results.articles and not results.books and not results.movies %}
+    <p>{% if CURRENT_LANG == 'fa' %}نتیجه‌ای برای "{{ query }}" یافت نشد. لطفاً عبارت دیگری وارد کنید.{% else %}No results found for "{{ query }}". Please try a different search term.{% endif %}</p>
+    {% endif %}
+    
+    {% else %}
+    <p>{% if CURRENT_LANG == 'fa' %}نتیجه‌ای برای "{{ query }}" یافت نشد. لطفاً عبارت دیگری وارد کنید.{% else %}No results found for "{{ query }}". Please try a different search term.{% endif %}</p>
+    {% endif %}
+    
+    {% else %}
+    <p>{% if CURRENT_LANG == 'fa' %}لطفاً عبارت جستجو را وارد کنید.{% else %}Please enter a search query.{% endif %}</p>
+    {% endif %}
+</div>
+{% endblock %}
+

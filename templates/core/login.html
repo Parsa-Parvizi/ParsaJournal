@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+{% load core_extras %}
+{% get_current_language as CURRENT_LANG %}
+
+{% block title %}
+{% if CURRENT_LANG == 'fa' %}
+ورود - {{ site_settings.site_name|localized_site_name }}
+{% else %}
+Login - {{ site_settings.site_name|localized_site_name }}
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="article-detail">
+        <h1 class="article-title">
+            {% if CURRENT_LANG == 'fa' %}
+            ورود مدیر
+            {% else %}
+            Admin Login
+            {% endif %}
+        </h1>
+        
+        <div class="article-content">
+            {% if CURRENT_LANG == 'fa' %}
+            <p>این صفحه ورود فقط برای حساب‌های ادمین فعال است. لطفاً اطلاعات ورود خود را وارد کنید تا به پنل مدیریت دسترسی داشته باشید.</p>
+            {% else %}
+            <p>This login page is restricted to superusers only. Please enter your credentials to access the admin panel.</p>
+            {% endif %}
+        </div>
+        
+        <form method="post" class="login-form" style="max-width: 500px; margin: 2rem auto;">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="username" class="form-label">
+                    {% if CURRENT_LANG == 'fa' %}نام کاربری{% else %}Username{% endif %}
+                </label>
+                <input type="text" name="username" id="username" class="form-input" placeholder="{% if CURRENT_LANG == 'fa' %}نام کاربری را وارد کنید{% else %}Enter your username{% endif %}" required autofocus>
+            </div>
+            
+            <div class="form-group">
+                <label for="password" class="form-label">
+                    {% if CURRENT_LANG == 'fa' %}رمز عبور{% else %}Password{% endif %}
+                </label>
+                <input type="password" name="password" id="password" class="form-input" placeholder="{% if CURRENT_LANG == 'fa' %}رمز عبور را وارد کنید{% else %}Enter your password{% endif %}" required>
+            </div>
+            
+            {% if request.GET.next %}
+            <input type="hidden" name="next" value="{{ request.GET.next }}">
+            {% endif %}
+            
+            <button type="submit" class="btn" style="width: 100%; margin-top: 1rem;">
+                {% if CURRENT_LANG == 'fa' %}ورود{% else %}Login{% endif %}
+            </button>
+        </form>
+        
+        <div class="login-info" style="margin-top: 2rem; padding: 1.5rem; background-color: var(--bg-light); border-radius: 8px; max-width: 500px; margin-left: auto; margin-right: auto;">
+            <p style="color: var(--text-light); font-size: 0.9rem; text-align: center;">
+                {% if CURRENT_LANG == 'fa' %}
+                <strong>توجه:</strong> تنها حساب‌های سوپر‌یوذر می‌توانند از طریق این صفحه وارد پنل مدیریت شوند.
+                {% else %}
+                <strong>Note:</strong> Only superuser accounts can access the admin panel through this login page.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

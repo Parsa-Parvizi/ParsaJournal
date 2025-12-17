@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+{% load core_extras %}
+{% get_current_language as CURRENT_LANG %}
+
+{% block title %}
+{% if CURRENT_LANG == 'fa' %}
+تماس - {{ site_settings.site_name|localized_site_name }}
+{% else %}
+Contact - {{ site_settings.site_name|localized_site_name }}
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="article-detail">
+        <h1 class="article-title">
+            {% if CURRENT_LANG == 'fa' %}
+            تماس با من
+            {% else %}
+            Contact Me
+            {% endif %}
+        </h1>
+        
+        <div class="article-content">
+            {% if CURRENT_LANG == 'fa' %}
+            <p>خوشحال می‌شوم از شما بشنوم. فرم زیر را پر کنید تا در اولین فرصت پاسخ بدهم.</p>
+            {% else %}
+            <p>I'd love to hear from you! Please fill out the form below and I'll get back to you as soon as possible.</p>
+            {% endif %}
+        </div>
+        
+        <form method="post" class="contact-form" style="max-width: 600px; margin: 2rem auto;">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="{{ form.name.id_for_label }}" class="form-label">
+                    {% if CURRENT_LANG == 'fa' %}نام{% else %}Name{% endif %}
+                </label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                <div class="error-message">{{ form.name.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.email.id_for_label }}" class="form-label">
+                    {% if CURRENT_LANG == 'fa' %}ایمیل{% else %}Email{% endif %}
+                </label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                <div class="error-message">{{ form.email.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.subject.id_for_label }}" class="form-label">
+                    {% if CURRENT_LANG == 'fa' %}موضوع{% else %}Subject{% endif %}
+                </label>
+                {{ form.subject }}
+                {% if form.subject.errors %}
+                <div class="error-message">{{ form.subject.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.message.id_for_label }}" class="form-label">
+                    {% if CURRENT_LANG == 'fa' %}پیام{% else %}Message{% endif %}
+                </label>
+                {{ form.message }}
+                {% if form.message.errors %}
+                <div class="error-message">{{ form.message.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <button type="submit" class="btn">
+                {% if CURRENT_LANG == 'fa' %}ارسال پیام{% else %}Send Message{% endif %}
+            </button>
+        </form>
+        
+        {% if site_settings %}
+        <div class="contact-info" style="margin-top: 3rem; padding: 2rem; background-color: var(--bg-light); border-radius: 8px; max-width: 600px; margin-left: auto; margin-right: auto;">
+            <h2>
+                {% if CURRENT_LANG == 'fa' %}
+                راه‌های دیگر ارتباط
+                {% else %}
+                Other Ways to Reach Me
+                {% endif %}
+            </h2>
+            {% if site_settings.contact_email %}
+            <p>
+                <strong>{% if CURRENT_LANG == 'fa' %}ایمیل:{% else %}Email:{% endif %}</strong>
+                <a href="mailto:{{ site_settings.contact_email }}">{{ site_settings.contact_email }}</a>
+            </p>
+            {% endif %}
+            {% if site_settings.contact_phone %}
+            <p>
+                <strong>{% if CURRENT_LANG == 'fa' %}تلفن:{% else %}Phone:{% endif %}</strong>
+                {{ site_settings.contact_phone }}
+            </p>
+            {% endif %}
+            {% if site_settings.contact_address %}
+            <p>
+                <strong>{% if CURRENT_LANG == 'fa' %}آدرس:{% else %}Address:{% endif %}</strong>
+                {{ site_settings.contact_address|linebreaks }}
+            </p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.error-message {
+    color: #d32f2f;
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+}
+</style>
+{% endblock %}
+

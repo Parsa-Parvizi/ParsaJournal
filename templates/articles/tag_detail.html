@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+{% load core_extras %}
+
+{% get_current_language as CURRENT_LANG %}
+
+{% block title %}{{ tag.name }} - Articles - {{ site_settings.site_name|localized_site_name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="article-detail" style="margin-bottom: 2rem;">
+        <h1 class="article-title">{% if CURRENT_LANG == 'fa' %}مقالات با تگ "{{ tag.name|translate_name }}"{% else %}Articles tagged "{{ tag.name|translate_name }}"{% endif %}</h1>
+    </div>
+    
+    <div class="single-column-center">
+        {% if page_obj %}
+        <div class="article-grid">
+                {% for article in page_obj %}
+                <article class="article-card">
+                    {% if article.featured_image %}
+                    <img src="{{ article.featured_image.url }}" alt="{{ article.image_alt|default:article.title }}" class="article-card-image">
+                    {% endif %}
+                    <div class="article-card-content">
+                        <div class="article-card-meta">
+                            <span>{{ article.published_at|localized_date:"F d, Y" }}</span> • 
+                            <span><a href="{% url 'articles:author_detail' article.author.slug %}">{{ article.author.display_name }}</a></span>
+                            {% if article.category %}
+                            • <a href="{% url 'articles:category_detail' article.category.slug %}">{{ article.category.name|translate_name }}</a>
+                            {% endif %}
+                        </div>
+                        <h3 class="article-card-title">
+                            <a href="{% url 'articles:article_detail' article.slug %}">{{ article.title }}</a>
+                        </h3>
+                        <p class="article-card-excerpt">{{ article.excerpt|truncatewords:25 }}</p>
+                        <div class="article-card-footer">
+                            <a href="{% url 'articles:article_detail' article.slug %}" class="btn">{% if CURRENT_LANG == 'fa' %}ادامه مطلب{% else %}Read More{% endif %}</a>
+                            <span class="views-pill">
+                                <span class="views-number">{{ article.views|localized_number }}</span>
+                                <span class="views-label">{% if CURRENT_LANG == 'fa' %}بازدید{% else %}views{% endif %}</span>
+                            </span>
+                        </div>
+                        {% if article.tags.all %}
+                        <div class="article-tags" style="margin-top: 1rem;">
+                            {% for tag in article.tags.all %}
+                            <a href="{% url 'articles:tag_detail' tag.slug %}" class="tag">{{ tag.name|translate_name }}</a>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}">{% if CURRENT_LANG == 'fa' %}قبلی{% else %}Previous{% endif %}</a>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <span class="current">{{ num }}</span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}">{{ num }}</a>
+                {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">{% if CURRENT_LANG == 'fa' %}بعدی{% else %}Next{% endif %}</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        {% else %}
+        <p>{% if CURRENT_LANG == 'fa' %}مقاله‌ای یافت نشد.{% else %}No articles found.{% endif %}</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

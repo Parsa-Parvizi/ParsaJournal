@@ -1,0 +1,200 @@
+{% load static %}
+{% load i18n %}
+{% load core_extras %}
+<!DOCTYPE html>
+{% get_current_language as CURRENT_LANG %}
+<html lang="{{ CURRENT_LANG|default:'fa' }}" dir="{% if CURRENT_LANG == 'fa' %}rtl{% else %}ltr{% endif %}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <!-- Apply theme immediately to prevent flash -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    
+    <title>{% block title %}{{ site_settings.site_name|localized_site_name }}{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}{{ site_settings.site_description|default:"Personal journalism blog with articles, book and movie reviews" }}{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}{{ site_settings.meta_keywords|default:"" }}{% endblock %}">
+    
+    {% block extra_meta %}{% endblock %}
+    
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dark-theme.css' %}">
+    {% block extra_css %}{% endblock %}
+    
+    {% if site_settings and site_settings.site_favicon %}
+    <link rel="icon" href="{{ site_settings.site_favicon.url }}">
+    {% endif %}
+    
+    {% if site_settings and site_settings.google_analytics_id %}
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ site_settings.google_analytics_id }}"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '{{ site_settings.google_analytics_id }}');
+    </script>
+    {% endif %}
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="{% url 'core:home' %}">
+                        {% if site_settings and site_settings.site_logo %}
+                        <img src="{{ site_settings.site_logo.url }}" alt="{{ site_settings.site_name|localized_site_name }}">
+                        {% else %}
+                        <h1>{{ site_settings.site_name|localized_site_name }}</h1>
+                        {% endif %}
+                    </a>
+                </div>
+                
+                <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                
+                <div class="mobile-menu-overlay"></div>
+                
+                <nav class="main-nav">
+                    <ul>
+                        {% if CURRENT_LANG == 'fa' %}
+                        <li><a href="{% url 'articles:article_list' %}">مقالات</a></li>
+                        <li><a href="{% url 'reviews:book_list' %}">کتاب‌ها</a></li>
+                        <li><a href="{% url 'reviews:movie_list' %}">فیلم‌ها</a></li>
+                        <li><a href="{% url 'core:about' %}">درباره</a></li>
+                        <li><a href="{% url 'core:contact' %}">تماس</a></li>
+                        <li><a href="{% url 'core:login' %}">ورود</a></li>
+                        {% else %}
+                        <li><a href="{% url 'articles:article_list' %}">Articles</a></li>
+                        <li><a href="{% url 'reviews:book_list' %}">Books</a></li>
+                        <li><a href="{% url 'reviews:movie_list' %}">Movies</a></li>
+                        <li><a href="{% url 'core:about' %}">About</a></li>
+                        <li><a href="{% url 'core:contact' %}">Contact</a></li>
+                        <li><a href="{% url 'core:login' %}">Login</a></li>
+                        {% endif %}
+                        <li class="language-switcher-nav">
+                            {% get_current_language as CURRENT_LANGUAGE %}
+                            {% get_available_languages as AVAILABLE_LANGUAGES %}
+                            {% for lang_code, lang_name in AVAILABLE_LANGUAGES %}
+                                {% language_label lang_code as lang_label %}
+                                {% if lang_code == CURRENT_LANGUAGE %}
+                                    <span class="lang-link active">{{ lang_label }}</span>
+                                {% else %}
+                                    {% if CURRENT_LANGUAGE == 'fa' %}
+                                        <a href="/" class="lang-link">{{ lang_label }}</a>
+                                    {% else %}
+                                        {% if request.path == "/" %}
+                                            <a href="/fa/" class="lang-link">{{ lang_label }}</a>
+                                        {% else %}
+                                            <a href="/fa{{ request.path }}" class="lang-link">{{ lang_label }}</a>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        </li>
+                    </ul>
+                </nav>
+                
+                <div class="header-actions">
+                    <form class="search-form" method="get" action="{% url 'core:search' %}">
+                        <input type="search" name="q" placeholder="{% if CURRENT_LANG == 'fa' %}جستجو...{% else %}Search...{% endif %}" value="{{ request.GET.q }}">
+                        <button type="submit">{% if CURRENT_LANG == 'fa' %}جستجو{% else %}Search{% endif %}</button>
+                    </form>
+                    <button type="button" class="theme-toggle" id="theme-toggle" aria-label="{% if CURRENT_LANG == 'fa' %}تغییر تم{% else %}Toggle theme{% endif %}" title="{% if CURRENT_LANG == 'fa' %}تغییر تم{% else %}Toggle theme{% endif %}">
+                        <span id="theme-icon">🌙</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="messages">
+        <div class="container">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>{% if CURRENT_LANG == 'fa' %}درباره{% else %}About{% endif %}</h3>
+                    <p>{% if CURRENT_LANG == 'fa' %}{{ site_settings.site_tagline|default:"روزنامه‌نگاری و نقد شخصی. نقد کتاب و فیلم. فضای تفکر، نقد و گفت‌وگو. جایی برای خواندن، دیدن و فکر کردن" }}{% else %}{{ site_settings.site_tagline|default:"Personal journalism and criticism. Book and film reviews. A space for reflection, criticism, and dialogue. A place to read, see, and think." }}{% endif %}</p>
+                    {% if site_settings %}
+                    <div class="social-links">
+                        {% if site_settings.twitter_url %}
+                        <a href="{{ site_settings.twitter_url }}" target="_blank" rel="noopener">Twitter</a>
+                        {% endif %}
+                        {% if site_settings.facebook_url %}
+                        <a href="{{ site_settings.facebook_url }}" target="_blank" rel="noopener">Facebook</a>
+                        {% endif %}
+                        {% if site_settings.instagram_url %}
+                        <a href="{{ site_settings.instagram_url }}" target="_blank" rel="noopener">Instagram</a>
+                        {% endif %}
+                        {% if site_settings.linkedin_url %}
+                        <a href="{{ site_settings.linkedin_url }}" target="_blank" rel="noopener">LinkedIn</a>
+                        {% endif %}
+                        {% if site_settings.youtube_url %}
+                        <a href="{{ site_settings.youtube_url }}" target="_blank" rel="noopener">YouTube</a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="footer-section">
+                    <h3>{% if CURRENT_LANG == 'fa' %}لینک‌های سریع{% else %}Quick Links{% endif %}</h3>
+                    <ul class="quick-links">
+                        <li><a href="{% url 'core:home' %}">{% if CURRENT_LANG == 'fa' %}خانه{% else %}Home{% endif %}</a></li>
+                        <li><a href="{% url 'articles:article_list' %}">{% if CURRENT_LANG == 'fa' %}مقالات{% else %}Articles{% endif %}</a></li>
+                        <li><a href="{% url 'reviews:book_list' %}">{% if CURRENT_LANG == 'fa' %}نقد کتاب{% else %}Book Reviews{% endif %}</a></li>
+                        <li><a href="{% url 'reviews:movie_list' %}">{% if CURRENT_LANG == 'fa' %}نقد فیلم{% else %}Movie Reviews{% endif %}</a></li>
+                        <li><a href="{% url 'core:about' %}">{% if CURRENT_LANG == 'fa' %}درباره{% else %}About{% endif %}</a></li>
+                        <li><a href="{% url 'core:contact' %}">{% if CURRENT_LANG == 'fa' %}تماس{% else %}Contact{% endif %}</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>{% if CURRENT_LANG == 'fa' %}خبرنامه{% else %}Newsletter{% endif %}</h3>
+                    <p>{% if CURRENT_LANG == 'fa' %}برای دریافت آخرین مقالات و نقدها مشترک شوید.{% else %}Subscribe to get the latest articles and reviews.{% endif %}</p>
+                    <form class="newsletter-form" method="post" action="{% url 'core:newsletter_subscribe' %}">
+                        {% csrf_token %}
+                        <input type="email" name="email" placeholder="{% if CURRENT_LANG == 'fa' %}ایمیل شما{% else %}Your email{% endif %}" required>
+                        <button type="submit">{% if CURRENT_LANG == 'fa' %}عضویت{% else %}Subscribe{% endif %}</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; {% now "Y" %} {{ site_settings.site_name|localized_site_name }}. {% if CURRENT_LANG == 'fa' %}تمام حقوق محفوظ است.{% else %}All rights reserved.{% endif %}</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+

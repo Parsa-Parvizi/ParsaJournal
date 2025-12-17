@@ -1,0 +1,271 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+
+{% block title %}{% if action == 'edit' %}Edit Article{% else %}Create New Article{% endif %} - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="admin-article-form">
+    <div class="page-header">
+        <h1 class="page-title">{% if action == 'edit' %}Edit Article: {{ article.title }}{% else %}Create New Article{% endif %}</h1>
+        <a href="{% url 'admin_panel:article_list' %}" class="btn btn-secondary">Back to List</a>
+    </div>
+    
+    <form method="post" enctype="multipart/form-data" class="article-form">
+        {% csrf_token %}
+        
+        <!-- Basic Information -->
+        <div class="form-section">
+            <h2 class="section-title">Basic Information</h2>
+            
+            <div class="form-group">
+                <label for="{{ form.title.id_for_label }}" class="form-label">Article Title *</label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                <div class="error-message">{{ form.title.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.slug.id_for_label }}" class="form-label">Slug (URL)</label>
+                {{ form.slug }}
+                <small class="form-help">If left empty, it will be auto-generated from the title</small>
+                {% if form.slug.errors %}
+                <div class="error-message">{{ form.slug.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.author.id_for_label }}" class="form-label">Author *</label>
+                    {{ form.author }}
+                    {% if form.author.errors %}
+                    <div class="error-message">{{ form.author.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.category.id_for_label }}" class="form-label">Category</label>
+                    {{ form.category }}
+                    {% if form.category.errors %}
+                    <div class="error-message">{{ form.category.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.tags.id_for_label }}" class="form-label">Tags</label>
+                {{ form.tags }}
+                <small class="form-help">Hold Ctrl (or Cmd on Mac) to select multiple tags</small>
+                {% if form.tags.errors %}
+                <div class="error-message">{{ form.tags.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Content -->
+        <div class="form-section">
+            <h2 class="section-title">Article Content</h2>
+            
+            <div class="form-group">
+                <label for="{{ form.excerpt.id_for_label }}" class="form-label">Article Excerpt *</label>
+                {{ form.excerpt }}
+                <small class="form-help">Short summary of the article (max 500 characters)</small>
+                {% if form.excerpt.errors %}
+                <div class="error-message">{{ form.excerpt.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.content.id_for_label }}" class="form-label">Article Content *</label>
+                {{ form.content }}
+                {% if form.content.errors %}
+                <div class="error-message">{{ form.content.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Images -->
+        <div class="form-section">
+            <h2 class="section-title">Images</h2>
+            
+            <div class="form-group">
+                <label for="{{ form.featured_image.id_for_label }}" class="form-label">Featured Image</label>
+                {% if action == 'edit' and article.featured_image %}
+                <div class="current-image">
+                    <img src="{{ article.featured_image.url }}" alt="Current image" style="max-width: 300px; height: auto; border-radius: 8px; margin-bottom: 1rem;">
+                </div>
+                {% endif %}
+                {{ form.featured_image }}
+                {% if form.featured_image.errors %}
+                <div class="error-message">{{ form.featured_image.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.image_alt.id_for_label }}" class="form-label">Image Alt Text</label>
+                {{ form.image_alt }}
+                {% if form.image_alt.errors %}
+                <div class="error-message">{{ form.image_alt.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- SEO -->
+        <div class="form-section">
+            <h2 class="section-title">SEO Settings</h2>
+            
+            <div class="form-group">
+                <label for="{{ form.meta_title.id_for_label }}" class="form-label">SEO Title</label>
+                {{ form.meta_title }}
+                <small class="form-help">If left empty, the article title will be used</small>
+                {% if form.meta_title.errors %}
+                <div class="error-message">{{ form.meta_title.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.meta_description.id_for_label }}" class="form-label">SEO Description</label>
+                {{ form.meta_description }}
+                <small class="form-help">Short description for search engines (max 300 characters)</small>
+                {% if form.meta_description.errors %}
+                <div class="error-message">{{ form.meta_description.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Status and Visibility -->
+        <div class="form-section">
+            <h2 class="section-title">Status & Visibility</h2>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.status.id_for_label }}" class="form-label">Status *</label>
+                    {{ form.status }}
+                    {% if form.status.errors %}
+                    <div class="error-message">{{ form.status.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.is_featured.id_for_label }}" class="form-label">Featured Article</label>
+                    <div class="checkbox-wrapper">
+                        {{ form.is_featured }}
+                        <label for="{{ form.is_featured.id_for_label }}">Make this article featured</label>
+                    </div>
+                    {% if form.is_featured.errors %}
+                    <div class="error-message">{{ form.is_featured.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.published_at.id_for_label }}" class="form-label">Published At</label>
+                {{ form.published_at }}
+                <small class="form-help">If left empty, it will be auto-set when published</small>
+                {% if form.published_at.errors %}
+                <div class="error-message">{{ form.published_at.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{% if action == 'edit' %}Save Changes{% else %}Create Article{% endif %}</button>
+            <a href="{% url 'admin_panel:article_list' %}" class="btn btn-secondary">Cancel</a>
+            {% if action == 'edit' %}
+            <a href="{% url 'admin_panel:article_detail' article.pk %}" class="btn btn-secondary">View Article</a>
+            <a href="{% url 'admin_panel:article_delete' article.pk %}" class="btn btn-danger">Delete Article</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.admin-article-form {
+    padding: 2rem 0;
+}
+
+.article-form {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.form-section {
+    background: var(--bg-light);
+    padding: 2rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: 0.5rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.form-help {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-light);
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+    width: auto;
+}
+
+.checkbox-wrapper label {
+    margin: 0;
+    font-weight: normal;
+}
+
+.current-image {
+    margin-bottom: 1rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--border-color);
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .form-actions .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

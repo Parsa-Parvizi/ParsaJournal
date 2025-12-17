@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+{% load core_extras %}
+
+{% get_current_language as CURRENT_LANG %}
+
+{% block title %}{{ author.display_name }} - Author - {{ site_settings.site_name|localized_site_name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="article-detail">
+        <div style="display: flex; gap: 2rem; margin-bottom: 2rem; align-items: center;">
+            {% if author.profile_image %}
+            <img src="{{ author.profile_image.url }}" alt="{{ author.display_name }}" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover;">
+            {% endif %}
+            <div>
+                <h1 class="article-title">{{ author.display_name }}</h1>
+                {% if author.bio %}
+                <p>{{ author.bio|linebreaks }}</p>
+                {% endif %}
+                {% if author.website or author.twitter or author.linkedin or author.instagram %}
+                <div class="social-links" style="margin-top: 1rem;">
+                    {% if author.website %}
+                    <a href="{{ author.website }}" target="_blank" rel="noopener">{% if CURRENT_LANG == 'fa' %}وب‌سایت{% else %}Website{% endif %}</a>
+                    {% endif %}
+                    {% if author.twitter %}
+                    <a href="https://twitter.com/{{ author.twitter }}" target="_blank" rel="noopener">Twitter</a>
+                    {% endif %}
+                    {% if author.linkedin %}
+                    <a href="https://linkedin.com/in/{{ author.linkedin }}" target="_blank" rel="noopener">LinkedIn</a>
+                    {% endif %}
+                    {% if author.instagram %}
+                    <a href="https://instagram.com/{{ author.instagram }}" target="_blank" rel="noopener">Instagram</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="two-column">
+        <div class="main-content-area">
+            <h2 class="section-title">{% if CURRENT_LANG == 'fa' %}مقالات {{ author.display_name }}{% else %}Articles by {{ author.display_name }}{% endif %}</h2>
+            
+            {% if page_obj %}
+            <div class="article-grid">
+                {% for article in page_obj %}
+                <article class="article-card">
+                    {% if article.featured_image %}
+                    <img src="{{ article.featured_image.url }}" alt="{{ article.image_alt|default:article.title }}" class="article-card-image">
+                    {% endif %}
+                    <div class="article-card-content">
+                        <div class="article-card-meta">
+                            <span>{{ article.published_at|localized_date:"F d, Y" }}</span>
+                            {% if article.category %}
+                            • <a href="{% url 'articles:category_detail' article.category.slug %}">{{ article.category.name|translate_name }}</a>
+                            {% endif %}
+                        </div>
+                        <h3 class="article-card-title">
+                            <a href="{% url 'articles:article_detail' article.slug %}">{{ article.title }}</a>
+                        </h3>
+                        <p class="article-card-excerpt">{{ article.excerpt|truncatewords:25 }}</p>
+                        <div class="article-card-footer">
+                            <a href="{% url 'articles:article_detail' article.slug %}" class="btn">{% if CURRENT_LANG == 'fa' %}ادامه مطلب{% else %}Read More{% endif %}</a>
+                            <span class="views-pill">
+                                <span class="views-number">{{ article.views|localized_number }}</span>
+                                <span class="views-label">{% if CURRENT_LANG == 'fa' %}بازدید{% else %}views{% endif %}</span>
+                            </span>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}">{% if CURRENT_LANG == 'fa' %}قبلی{% else %}Previous{% endif %}</a>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <span class="current">{{ num }}</span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}">{{ num }}</a>
+                {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">{% if CURRENT_LANG == 'fa' %}بعدی{% else %}Next{% endif %}</a>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% else %}
+            <p>{% if CURRENT_LANG == 'fa' %}مقاله‌ای یافت نشد.{% else %}No articles found.{% endif %}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

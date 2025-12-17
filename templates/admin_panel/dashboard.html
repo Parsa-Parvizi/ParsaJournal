@@ -1,0 +1,703 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+{% load i18n %}
+{% load core_extras %}
+{% get_current_language as CURRENT_LANG %}
+
+{% block title %}{% if CURRENT_LANG == 'fa' %}داشبورد{% else %}Dashboard{% endif %} - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <h1 class="page-title">{% if CURRENT_LANG == 'fa' %}داشبورد مدیریت{% else %}Admin Dashboard{% endif %}</h1>
+    
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-content">
+                <h3>{% if CURRENT_LANG == 'fa' %}کل مقالات{% else %}Total Articles{% endif %}</h3>
+                <p class="stat-number">{{ total_articles|localized_number }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-content">
+                <h3>{% if CURRENT_LANG == 'fa' %}مقالات منتشر شده{% else %}Published Articles{% endif %}</h3>
+                <p class="stat-number">{{ published_articles|localized_number }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-content">
+                <h3>{% if CURRENT_LANG == 'fa' %}کل نقدهای کتاب{% else %}Total Book Reviews{% endif %}</h3>
+                <p class="stat-number">{{ total_book_reviews|localized_number }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-content">
+                <h3>{% if CURRENT_LANG == 'fa' %}کل نقدهای فیلم{% else %}Total Movie Reviews{% endif %}</h3>
+                <p class="stat-number">{{ total_movie_reviews|localized_number }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-content">
+                <h3>{% if CURRENT_LANG == 'fa' %}کل بازدیدها{% else %}Total Views{% endif %}</h3>
+                <p class="stat-number">{{ total_views|localized_number }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-content">
+                <h3>{% if CURRENT_LANG == 'fa' %}پیام‌های جدید{% else %}New Messages{% endif %}</h3>
+                <p class="stat-number">{{ new_messages|localized_number }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-content">
+                <h3>{% if CURRENT_LANG == 'fa' %}نظرات در انتظار{% else %}Pending Comments{% endif %}</h3>
+                <p class="stat-number">{{ pending_comments|localized_number }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-content">
+                <h3>{% if CURRENT_LANG == 'fa' %}مشترکین خبرنامه{% else %}Newsletter Subscribers{% endif %}</h3>
+                <p class="stat-number">{{ total_subscribers|localized_number }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts Section -->
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h2>Analytics</h2>
+            <div class="chart-controls">
+                <select id="period-select" class="form-select">
+                    <option value="day">Daily</option>
+                    <option value="week">Weekly</option>
+                    <option value="month" selected>Monthly</option>
+                </select>
+                <input type="date" id="start-date" class="form-input">
+                <input type="date" id="end-date" class="form-input">
+                <button id="update-charts" class="btn btn-primary">Update</button>
+            </div>
+        </div>
+        
+        <div class="charts-grid">
+            <div class="chart-container">
+                <h3 class="chart-title">Articles Over Time</h3>
+                <canvas id="articles-chart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <h3 class="chart-title">Views Over Time</h3>
+                <canvas id="views-chart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Content -->
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h2>{% if CURRENT_LANG == 'fa' %}محتوای اخیر{% else %}Recent Content{% endif %}</h2>
+            <a href="{% url 'admin_panel:article_list' %}" class="btn">{% if CURRENT_LANG == 'fa' %}مشاهده همه{% else %}View All{% endif %}</a>
+        </div>
+        
+        <div class="table-container">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>{% if CURRENT_LANG == 'fa' %}عنوان{% else %}Title{% endif %}</th>
+                        <th>{% if CURRENT_LANG == 'fa' %}نویسنده{% else %}Author{% endif %}</th>
+                        <th>{% if CURRENT_LANG == 'fa' %}دسته‌بندی{% else %}Category{% endif %}</th>
+                        <th>{% if CURRENT_LANG == 'fa' %}وضعیت{% else %}Status{% endif %}</th>
+                        <th>{% if CURRENT_LANG == 'fa' %}تاریخ ایجاد{% else %}Created At{% endif %}</th>
+                        <th>{% if CURRENT_LANG == 'fa' %}عملیات{% else %}Actions{% endif %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for article in recent_articles %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'admin_panel:article_detail' article.pk %}">{{ article.title }}</a> <span style="color: var(--text-light); font-size: 0.85rem;">({% if CURRENT_LANG == 'fa' %}مقاله{% else %}Article{% endif %})</span>
+                        </td>
+                        <td>{{ article.author.display_name }}</td>
+                        <td>{{ article.category.name|translate_name|default:"-" }}</td>
+                        <td>
+                            <span class="status-badge status-{{ article.status }}">{{ article.get_status_display }}</span>
+                        </td>
+                        <td>{{ article.created_at|localized_date:"Y/m/d H:i" }}</td>
+                        <td>
+                            <a href="{% url 'admin_panel:article_edit' article.pk %}" class="btn-small">{% if CURRENT_LANG == 'fa' %}ویرایش{% else %}Edit{% endif %}</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% for book in recent_books %}
+                    <tr>
+                        <td>
+                            <span>{{ book.title }}</span> <span style="color: var(--text-light); font-size: 0.85rem;">({% if CURRENT_LANG == 'fa' %}کتاب{% else %}Book{% endif %})</span>
+                        </td>
+                        <td>{{ book.author.display_name }}</td>
+                        <td>{{ book.category.name|translate_name|default:"-" }}</td>
+                        <td>
+                            <span class="status-badge {% if book.is_published %}status-published{% else %}status-draft{% endif %}">{% if CURRENT_LANG == 'fa' %}{% if book.is_published %}منتشر شده{% else %}پیش‌نویس{% endif %}{% else %}{% if book.is_published %}Published{% else %}Draft{% endif %}{% endif %}</span>
+                        </td>
+                        <td>{{ book.created_at|localized_date:"Y/m/d H:i" }}</td>
+                        <td>
+                            <span class="btn-small" style="opacity: 0.6;">{% if CURRENT_LANG == 'fa' %}Django Admin{% else %}Django Admin{% endif %}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% for movie in recent_movies %}
+                    <tr>
+                        <td>
+                            <span>{{ movie.title }}</span> <span style="color: var(--text-light); font-size: 0.85rem;">({% if CURRENT_LANG == 'fa' %}فیلم{% else %}Movie{% endif %})</span>
+                        </td>
+                        <td>{{ movie.author.display_name }}</td>
+                        <td>{{ movie.category.name|translate_name|default:"-" }}</td>
+                        <td>
+                            <span class="status-badge {% if movie.is_published %}status-published{% else %}status-draft{% endif %}">{% if CURRENT_LANG == 'fa' %}{% if movie.is_published %}منتشر شده{% else %}پیش‌نویس{% endif %}{% else %}{% if movie.is_published %}Published{% else %}Draft{% endif %}{% endif %}</span>
+                        </td>
+                        <td>{{ movie.created_at|localized_date:"Y/m/d H:i" }}</td>
+                        <td>
+                            <span class="btn-small" style="opacity: 0.6;">{% if CURRENT_LANG == 'fa' %}Django Admin{% else %}Django Admin{% endif %}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not recent_articles and not recent_books and not recent_movies %}
+                    <tr>
+                        <td colspan="6" class="text-center">{% if CURRENT_LANG == 'fa' %}محتوا یافت نشد{% else %}No content found{% endif %}</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Popular Content -->
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h2>{% if CURRENT_LANG == 'fa' %}محتوای محبوب{% else %}Popular Content{% endif %}</h2>
+        </div>
+        
+        <div class="table-container">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>{% if CURRENT_LANG == 'fa' %}عنوان{% else %}Title{% endif %}</th>
+                        <th>{% if CURRENT_LANG == 'fa' %}نویسنده{% else %}Author{% endif %}</th>
+                        <th>{% if CURRENT_LANG == 'fa' %}بازدید{% else %}Views{% endif %}</th>
+                        <th>{% if CURRENT_LANG == 'fa' %}وضعیت{% else %}Status{% endif %}</th>
+                        <th>{% if CURRENT_LANG == 'fa' %}عملیات{% else %}Actions{% endif %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for article in popular_articles %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'admin_panel:article_detail' article.pk %}">{{ article.title }}</a> <span style="color: var(--text-light); font-size: 0.85rem;">({% if CURRENT_LANG == 'fa' %}مقاله{% else %}Article{% endif %})</span>
+                        </td>
+                        <td>{{ article.author.display_name }}</td>
+                        <td>{{ article.views|localized_number }}</td>
+                        <td>
+                            <span class="status-badge status-{{ article.status }}">{{ article.get_status_display }}</span>
+                        </td>
+                        <td>
+                            <a href="{% url 'admin_panel:article_edit' article.pk %}" class="btn-small">{% if CURRENT_LANG == 'fa' %}ویرایش{% else %}Edit{% endif %}</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% for book in popular_books %}
+                    <tr>
+                        <td>
+                            <span>{{ book.title }}</span> <span style="color: var(--text-light); font-size: 0.85rem;">({% if CURRENT_LANG == 'fa' %}کتاب{% else %}Book{% endif %})</span>
+                        </td>
+                        <td>{{ book.author.display_name }}</td>
+                        <td>{{ book.views|localized_number }}</td>
+                        <td>
+                            <span class="status-badge {% if book.is_published %}status-published{% else %}status-draft{% endif %}">{% if CURRENT_LANG == 'fa' %}{% if book.is_published %}منتشر شده{% else %}پیش‌نویس{% endif %}{% else %}{% if book.is_published %}Published{% else %}Draft{% endif %}{% endif %}</span>
+                        </td>
+                        <td>
+                            <span class="btn-small" style="opacity: 0.6;">{% if CURRENT_LANG == 'fa' %}Django Admin{% else %}Django Admin{% endif %}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% for movie in popular_movies %}
+                    <tr>
+                        <td>
+                            <span>{{ movie.title }}</span> <span style="color: var(--text-light); font-size: 0.85rem;">({% if CURRENT_LANG == 'fa' %}فیلم{% else %}Movie{% endif %})</span>
+                        </td>
+                        <td>{{ movie.author.display_name }}</td>
+                        <td>{{ movie.views|localized_number }}</td>
+                        <td>
+                            <span class="status-badge {% if movie.is_published %}status-published{% else %}status-draft{% endif %}">{% if CURRENT_LANG == 'fa' %}{% if movie.is_published %}منتشر شده{% else %}پیش‌نویس{% endif %}{% else %}{% if movie.is_published %}Published{% else %}Draft{% endif %}{% endif %}</span>
+                        </td>
+                        <td>
+                            <span class="btn-small" style="opacity: 0.6;">{% if CURRENT_LANG == 'fa' %}Django Admin{% else %}Django Admin{% endif %}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not popular_articles and not popular_books and not popular_movies %}
+                    <tr>
+                        <td colspan="5" class="text-center">{% if CURRENT_LANG == 'fa' %}محتوا یافت نشد{% else %}No content found{% endif %}</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h2>{% if CURRENT_LANG == 'fa' %}عملیات سریع{% else %}Quick Actions{% endif %}</h2>
+        </div>
+        
+        <div class="quick-actions">
+            <a href="{% url 'admin_panel:article_create' %}" class="btn btn-primary">{% if CURRENT_LANG == 'fa' %}ایجاد مقاله جدید{% else %}Create New Article{% endif %}</a>
+            <a href="{% url 'admin_panel:article_list' %}" class="btn btn-secondary">{% if CURRENT_LANG == 'fa' %}مدیریت محتوا{% else %}Manage Content{% endif %}</a>
+            <a href="{% url 'admin_panel:statistics' %}" class="btn btn-secondary">{% if CURRENT_LANG == 'fa' %}مشاهده آمار{% else %}View Statistics{% endif %}</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.admin-dashboard {
+    padding: 2rem 0;
+}
+
+.page-title {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: var(--primary-color);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+}
+
+.stat-content h3 {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-bottom: 0.5rem;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.dashboard-section {
+    margin-bottom: 3rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.section-header h2 {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.admin-table thead {
+    background: var(--bg-light);
+}
+
+.admin-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.admin-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.admin-table tbody tr:hover {
+    background: var(--bg-light);
+}
+
+.admin-table a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.admin-table a:hover {
+    color: var(--accent-color);
+}
+
+.admin-table a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent-color), transparent);
+    transition: width 0.3s ease;
+    border-radius: 2px;
+}
+
+.admin-table a:hover::after {
+    width: 100%;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.status-published {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-draft {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-archived {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.btn-small {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: var(--accent-color);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-small:hover {
+    background: #b8941f;
+}
+
+.btn-primary {
+    background: var(--accent-color);
+}
+
+.btn-secondary {
+    background: var(--secondary-color);
+}
+
+.text-center {
+    text-align: center;
+    color: var(--text-light);
+}
+
+.quick-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.chart-controls {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.chart-controls .form-select,
+.chart-controls .form-input {
+    padding: 0.6rem 1rem;
+    border: 2px solid var(--accent-color);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    background: var(--bg-color);
+    color: var(--text-color);
+    transition: all 0.3s ease;
+    min-width: 150px;
+    height: 42px;
+    box-sizing: border-box;
+}
+
+.chart-controls .form-select:focus,
+.chart-controls .form-input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+    background-color: rgba(212, 175, 55, 0.05);
+}
+
+.chart-controls .form-select:hover,
+.chart-controls .form-input:hover {
+    background-color: rgba(212, 175, 55, 0.05);
+    border-color: #b8941f;
+}
+
+.chart-controls .form-input[type="date"] {
+    cursor: pointer;
+    position: relative;
+}
+
+.chart-controls .form-input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: invert(0.5) sepia(1) saturate(5) hue-rotate(30deg);
+    opacity: 0.8;
+    transition: opacity 0.3s;
+}
+
+.chart-controls .form-input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
+.chart-controls .btn {
+    height: 42px;
+    padding: 0.6rem 1.5rem;
+    min-width: 120px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.chart-container {
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.chart-title {
+    font-size: 1.2rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .quick-actions {
+        flex-direction: column;
+    }
+    
+    .quick-actions .btn {
+        width: 100%;
+    }
+    
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .chart-controls {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .chart-controls .form-select,
+    .chart-controls .form-input,
+    .chart-controls .btn {
+        width: 100%;
+        min-width: unset;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// Initialize charts
+let articlesChart = null;
+let viewsChart = null;
+
+// Chart configuration
+const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: {
+        legend: {
+            display: true,
+            position: 'top',
+        },
+        tooltip: {
+            mode: 'index',
+            intersect: false,
+        }
+    },
+    scales: {
+        y: {
+            beginAtZero: true,
+            ticks: {
+                stepSize: 1
+            }
+        },
+        x: {
+            ticks: {
+                maxRotation: 45,
+                minRotation: 0
+            }
+        }
+    },
+    interaction: {
+        mode: 'nearest',
+        axis: 'x',
+        intersect: false
+    }
+};
+
+// Load chart data
+async function loadChartData() {
+    const startDate = document.getElementById('start-date').value;
+    const endDate = document.getElementById('end-date').value;
+    const period = document.getElementById('period-select').value;
+    
+    const params = new URLSearchParams();
+    if (startDate) params.append('start_date', startDate);
+    if (endDate) params.append('end_date', endDate);
+    params.append('period', period);
+    
+    try {
+        const response = await fetch(`{% url 'admin_panel:chart_data' %}?${params.toString()}`);
+        const data = await response.json();
+        
+        // Update articles chart
+        if (articlesChart) {
+            articlesChart.destroy();
+        }
+        articlesChart = new Chart(document.getElementById('articles-chart'), {
+            type: 'line',
+            data: {
+                labels: data.articles.labels,
+                datasets: [{
+                    label: 'Articles Created',
+                    data: data.articles.data,
+                    borderColor: 'rgb(212, 175, 55)',
+                    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: 'rgb(212, 175, 55)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: chartOptions
+        });
+        
+        // Update views chart
+        if (viewsChart) {
+            viewsChart.destroy();
+        }
+        viewsChart = new Chart(document.getElementById('views-chart'), {
+            type: 'bar',
+            data: {
+                labels: data.views.labels,
+                datasets: [{
+                    label: 'Total Views',
+                    data: data.views.data,
+                    backgroundColor: 'rgba(212, 175, 55, 0.6)',
+                    borderColor: 'rgb(212, 175, 55)',
+                    borderWidth: 2,
+                    borderRadius: 4
+                }]
+            },
+            options: chartOptions
+        });
+    } catch (error) {
+        console.error('Error loading chart data:', error);
+    }
+}
+
+// Set default date range (last 30 days)
+function setDefaultDateRange() {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 30);
+    
+    document.getElementById('end-date').value = endDate.toISOString().split('T')[0];
+    document.getElementById('start-date').value = startDate.toISOString().split('T')[0];
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    setDefaultDateRange();
+    loadChartData();
+    
+    // Update charts button
+    document.getElementById('update-charts').addEventListener('click', loadChartData);
+    
+    // Auto-update on period change
+    document.getElementById('period-select').addEventListener('change', loadChartData);
+});
+</script>
+{% endblock %}

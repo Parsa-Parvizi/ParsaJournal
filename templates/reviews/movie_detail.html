@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+{% load core_extras %}
+
+{% get_current_language as CURRENT_LANG %}
+
+{% block title %}{{ movie.meta_title|default:movie.title }} - {{ site_settings.site_name|localized_site_name }}{% endblock %}
+
+{% block meta_description %}{{ movie.meta_description|default:movie.excerpt }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <article class="article-detail">
+        <header class="article-header">
+            <h1 class="article-title">{{ movie.title }}</h1>
+            <div class="article-meta">
+                <span>{{ movie.published_at|localized_date:"F d, Y" }}</span> • 
+                <span><a href="{% url 'articles:author_detail' movie.author.slug %}">{{ movie.author.display_name }}</a></span>
+                {% if movie.category %}
+                • <a href="{% url 'reviews:movie_category_detail' movie.category.slug %}">{{ movie.category.name|translate_name }}</a>
+                {% endif %}
+                • <span>{{ movie.views|localized_number }} {% if CURRENT_LANG == 'fa' %}بازدید{% else %}views{% endif %}</span>
+            </div>
+            
+            <div style="margin-top: 1rem; padding: 1rem; background-color: var(--bg-light); border-radius: 8px;">
+                <h3>{{ movie.movie_title }}</h3>
+                <p><strong>{% if CURRENT_LANG == 'fa' %}کارگردان:{% else %}Director:{% endif %}</strong> {{ movie.director }}</p>
+                {% if movie.year %}
+                <p><strong>{% if CURRENT_LANG == 'fa' %}سال:{% else %}Year:{% endif %}</strong> {{ movie.year }}</p>
+                {% endif %}
+                {% if movie.genre %}
+                <p><strong>{% if CURRENT_LANG == 'fa' %}ژانر:{% else %}Genre:{% endif %}</strong> {{ movie.genre }}</p>
+                {% endif %}
+                {% if movie.watch_link %}
+                <p style="margin-top: 1rem;"><a href="{{ movie.watch_link }}" target="_blank" rel="noopener" class="btn">{% if CURRENT_LANG == 'fa' %}تماشای فیلم{% else %}Watch Movie{% endif %}</a></p>
+                {% endif %}
+            </div>
+        </header>
+        
+        {% if movie.poster_image %}
+        <img src="{{ movie.poster_image.url }}" alt="{{ movie.image_alt|default:movie.movie_title }}" class="article-featured-image">
+        {% endif %}
+        
+        <div class="article-content">
+            {{ movie.content|safe }}
+        </div>
+        
+        <!-- Related Movies -->
+        {% if related_movies %}
+        <section class="related-articles" style="margin-top: 3rem; padding-top: 2rem; border-top: 2px solid var(--border-color);">
+            <h2>{% if CURRENT_LANG == 'fa' %}نقدهای مرتبط فیلم{% else %}Related Movie Reviews{% endif %}</h2>
+            <div class="article-grid" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));">
+                {% for related in related_movies %}
+                <article class="article-card">
+                    {% if related.poster_image %}
+                    <img src="{{ related.poster_image.url }}" alt="{{ related.image_alt|default:related.movie_title }}" class="article-card-image">
+                    {% endif %}
+                    <div class="article-card-content">
+                        <h3 class="article-card-title">
+                            <a href="{% url 'reviews:movie_detail' related.slug %}">{{ related.title }}</a>
+                        </h3>
+                        <p class="article-card-excerpt">{{ related.movie_title }}</p>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+        
+        <!-- Comments Section -->
+        <section class="comments-section">
+            <h2>
+                {% if CURRENT_LANG == 'fa' %}
+                نظرات ({{ comments.count|localized_number }})
+                {% else %}
+                Comments ({{ comments.count }})
+                {% endif %}
+            </h2>
+            
+            {% if comments %}
+            {% for comment in comments %}
+            <div class="comment">
+                <div class="comment-header">
+                    <span class="comment-author">{{ comment.get_author_name }}</span>
+                    <span class="comment-date">{{ comment.created_at|localized_date:"F d, Y g:i A" }}</span>
+                </div>
+                <div class="comment-content">
+                    {{ comment.content|linebreaks }}
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p>{% if CURRENT_LANG == 'fa' %}هنوز نظری ثبت نشده است. اولین نفری باشید که نظر می‌دهد!{% else %}No comments yet. Be the first to comment!{% endif %}</p>
+            {% endif %}
+            
+            <!-- Comment Form -->
+            <div class="comment-form" style="margin-top: 2rem;">
+                <h3>{% if CURRENT_LANG == 'fa' %}ثبت نظر{% else %}Leave a Comment{% endif %}</h3>
+                {% if user.is_authenticated %}
+                <p>{% if CURRENT_LANG == 'fa' %}در حال نظر دادن به عنوان{% else %}Commenting as{% endif %} <strong>{{ user.get_full_name|default:user.username }}</strong></p>
+                {% endif %}
+                <form method="post">
+                    {% csrf_token %}
+                    {% if not user.is_authenticated %}
+                    <div class="form-group">
+                        <label for="{{ form.name.id_for_label }}" class="form-label">{% if CURRENT_LANG == 'fa' %}نام{% else %}Name{% endif %}</label>
+                        {{ form.name }}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">{% if CURRENT_LANG == 'fa' %}ایمیل{% else %}Email{% endif %}</label>
+                        {{ form.email }}
+                    </div>
+                    {% else %}
+                    {{ form.name }}
+                    {{ form.email }}
+                    {% endif %}
+                    <div class="form-group">
+                        <label for="{{ form.website.id_for_label }}" class="form-label">{% if CURRENT_LANG == 'fa' %}وب‌سایت (اختیاری){% else %}Website (optional){% endif %}</label>
+                        {{ form.website }}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.content.id_for_label }}" class="form-label">{% if CURRENT_LANG == 'fa' %}نظر{% else %}Comment{% endif %}</label>
+                        {{ form.content }}
+                    </div>
+                    <button type="submit" class="btn">{% if CURRENT_LANG == 'fa' %}ارسال نظر{% else %}Submit Comment{% endif %}</button>
+                </form>
+            </div>
+        </section>
+    </article>
+</div>
+{% endblock %}
+

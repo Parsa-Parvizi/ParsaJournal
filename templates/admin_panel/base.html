@@ -1,0 +1,197 @@
+{% load static %}
+{% load core_extras %}
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <title>{% block title %}Admin Panel - {{ site_settings.site_name}}{% endblock %}</title>
+    
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+    
+    <style>
+    /* Admin Panel Specific Styles */
+    .admin-header {
+        border-bottom: 3px solid var(--accent-color);
+    }
+    
+    .admin-nav ul {
+        display: flex;
+        list-style: none;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .admin-nav a {
+        color: #fff;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+    }
+    
+    .admin-nav a:hover {
+        color: var(--accent-color);
+        background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .view-site-link {
+        background: rgba(212, 175, 55, 0.2);
+        border: 1px solid var(--accent-color);
+    }
+    
+    .view-site-link:hover {
+        background: rgba(212, 175, 55, 0.3);
+        color: var(--accent-color);
+    }
+    
+    .admin-user {
+        color: #fff;
+        padding: 0.5rem 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        font-weight: 500;
+    }
+    
+    .admin-content {
+        min-height: calc(100vh - 200px);
+        padding: 2rem 0;
+    }
+    
+    .admin-footer {
+        margin-top: 4rem;
+    }
+    
+    /* Form Styles */
+    .form-input,
+    .form-textarea,
+    .form-select,
+    .form-file {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        font-size: 1rem;
+        font-family: var(--font-family);
+        background: var(--bg-color);
+    }
+    
+    .form-select {
+        cursor: pointer;
+    }
+    
+    .form-file {
+        padding: 0.5rem;
+    }
+    
+    .form-input:focus,
+    .form-textarea:focus,
+    .form-select:focus,
+    .form-file:focus {
+        outline: none;
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+    }
+    
+    .form-checkbox {
+        width: auto;
+        margin-right: 0.5rem;
+    }
+    
+    /* Text Alignment for LTR */
+    .admin-table th,
+    .admin-table td {
+        text-align: left;
+    }
+    
+    .info-item {
+        text-align: left;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .admin-nav ul {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .admin-user {
+            display: none;
+        }
+    }
+    </style>
+    
+    {% if site_settings and site_settings.site_favicon %}
+    <link rel="icon" href="{{ site_settings.site_favicon.url }}">
+    {% endif %}
+</head>
+<body>
+    <!-- Admin Header -->
+    <header class="header admin-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="{% url 'admin_panel:dashboard' %}">
+                        {% if site_settings and site_settings.site_logo %}
+                        <img src="{{ site_settings.site_logo.url }}" alt="{{ site_settings.site_name }}">
+                        {% else %}
+                        <h1>{{ site_settings.site_name|localized_site_name }} - Admin Panel</h1>
+                        {% endif %}
+                    </a>
+                </div>
+                
+                <nav class="main-nav admin-nav">
+                    <ul>
+                        <li><a href="{% url 'admin_panel:dashboard' %}">Dashboard</a></li>
+                        <li><a href="{% url 'admin_panel:article_list' %}">Articles</a></li>
+                        <li><a href="{% url 'admin_panel:statistics' %}">Statistics</a></li>
+                        <li><a href="{% url 'core:logout' %}">Logout</a></li>
+                        <li><a href="{% url 'core:home' %}" target="_blank" class="view-site-link">View Site</a></li>
+                    </ul>
+                </nav>
+                
+                <div class="admin-user">
+                    <span>{{ user.username }}</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="messages">
+        <div class="container">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="main-content admin-content">
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer admin-footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; {% now "Y" %} {{ site_settings.site_name|localized_site_name }} - Admin Panel. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+

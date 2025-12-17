@@ -1,0 +1,295 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+{% load core_extras %}
+
+{% get_current_language as CURRENT_LANG %}
+
+{% block title %}Home - {{ site_settings.site_name|localized_site_name }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <h1>{{ site_settings.site_name|localized_site_name }}</h1>
+        <p>{% if CURRENT_LANG == 'fa' %}{{ site_settings.site_tagline|default:"روزنامه‌نگاری، مقالات و نقدها" }}{% else %}{{ site_settings.site_tagline|default:"Personal journalism, articles, and reviews" }}{% endif %}</p>
+    </div>
+</section>
+
+<div class="container">
+    <!-- Featured Articles -->
+    {% if featured_articles %}
+    <section class="featured-section">
+        <h2 class="section-title">{% if CURRENT_LANG == 'fa' %}مقالات برتر{% else %}Featured Articles{% endif %}</h2>
+        <div class="article-grid">
+            {% for article in featured_articles %}
+            <article class="article-card">
+                {% if article.featured_image %}
+                <img src="{{ article.featured_image.url }}" alt="{{ article.image_alt|default:article.title }}" class="article-card-image">
+                {% endif %}
+                <div class="article-card-content">
+                    <div class="article-card-meta">
+                        <span>{{ article.published_at|localized_date:"F d, Y" }}</span> • 
+                        <span>{{ article.author.display_name }}</span>
+                        {% if article.category %}
+                        • <a href="{% url 'articles:category_detail' article.category.slug %}">{{ article.category.name|translate_name }}</a>
+                        {% endif %}
+                    </div>
+                    <h3 class="article-card-title">
+                        <a href="{% url 'articles:article_detail' article.slug %}">{{ article.title }}</a>
+                    </h3>
+                    <p class="article-card-excerpt">{{ article.excerpt|truncatewords:20 }}</p>
+                    <div class="article-card-footer">
+                        <a href="{% url 'articles:article_detail' article.slug %}" class="btn">{% if CURRENT_LANG == 'fa' %}ادامه مطلب{% else %}Read More{% endif %}</a>
+                        <span class="views-pill">
+                            <span class="views-number">{{ article.views|localized_number }}</span>
+                            <span class="views-label">{% if CURRENT_LANG == 'fa' %}بازدید{% else %}views{% endif %}</span>
+                        </span>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Latest Articles -->
+    <section class="latest-section">
+        <h2 class="section-title">{% if CURRENT_LANG == 'fa' %}آخرین مقالات{% else %}Latest Articles{% endif %}</h2>
+        <div class="article-grid">
+            {% for article in latest_articles %}
+            <article class="article-card">
+                {% if article.featured_image %}
+                <img src="{{ article.featured_image.url }}" alt="{{ article.image_alt|default:article.title }}" class="article-card-image">
+                {% endif %}
+                <div class="article-card-content">
+                    <div class="article-card-meta">
+                        <span>{{ article.published_at|localized_date:"F d, Y" }}</span> • 
+                        <span>{{ article.author.display_name }}</span>
+                        {% if article.category %}
+                        • <a href="{% url 'articles:category_detail' article.category.slug %}">{{ article.category.name|translate_name }}</a>
+                        {% endif %}
+                    </div>
+                    <h3 class="article-card-title">
+                        <a href="{% url 'articles:article_detail' article.slug %}">{{ article.title }}</a>
+                    </h3>
+                    <p class="article-card-excerpt">{{ article.excerpt|truncatewords:20 }}</p>
+                    <div class="article-card-footer">
+                        <a href="{% url 'articles:article_detail' article.slug %}" class="btn">{% if CURRENT_LANG == 'fa' %}ادامه مطلب{% else %}Read More{% endif %}</a>
+                        <span class="views-pill">
+                            <span class="views-number">{{ article.views|localized_number }}</span>
+                            <span class="views-label">{% if CURRENT_LANG == 'fa' %}بازدید{% else %}views{% endif %}</span>
+                        </span>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        <div class="text-center">
+            <a href="{% url 'articles:article_list' %}" class="btn btn-secondary">{% if CURRENT_LANG == 'fa' %}مشاهده همه مقالات{% else %}View All Articles{% endif %}</a>
+        </div>
+    </section>
+
+    <!-- Featured Reviews -->
+    <div class="reviews-section" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem;">
+        <!-- Featured Books -->
+        {% if featured_books %}
+        <section>
+            <h2 class="section-title">{% if CURRENT_LANG == 'fa' %}نقدهای برتر کتاب{% else %}Featured Book Reviews{% endif %}</h2>
+            <div class="article-grid" style="grid-template-columns: 1fr;">
+                {% for book in featured_books %}
+                <article class="article-card">
+                    {% if book.cover_image %}
+                    <img src="{{ book.cover_image.url }}" alt="{{ book.image_alt|default:book.book_title }}" class="article-card-image">
+                    {% endif %}
+                    <div class="article-card-content">
+                        <div class="article-card-meta">
+                            <span>{{ book.published_at|localized_date:"F d, Y" }}</span>
+                            {% if book.category %}
+                            • <a href="{% url 'reviews:book_category_detail' book.category.slug %}">{{ book.category.name|translate_name }}</a>
+                            {% endif %}
+                        </div>
+                        <h3 class="article-card-title">
+                            <a href="{% url 'reviews:book_detail' book.slug %}">{{ book.title }}</a>
+                        </h3>
+                        <p class="article-card-excerpt">{{ book.book_title }} {% if CURRENT_LANG == 'fa' %}نوشته{% else %}by{% endif %} {{ book.book_author }}</p>
+                        <div class="article-card-footer">
+                            <a href="{% url 'reviews:book_detail' book.slug %}" class="btn">{% if CURRENT_LANG == 'fa' %}خواندن نقد{% else %}Read Review{% endif %}</a>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+            <div class="text-center">
+                <a href="{% url 'reviews:book_list' %}" class="btn btn-secondary">{% if CURRENT_LANG == 'fa' %}مشاهده همه کتاب‌ها{% else %}View All Books{% endif %}</a>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Featured Movies -->
+        {% if featured_movies %}
+        <section>
+            <h2 class="section-title">{% if CURRENT_LANG == 'fa' %}نقدهای برتر فیلم{% else %}Featured Movie Reviews{% endif %}</h2>
+            <div class="article-grid" style="grid-template-columns: 1fr;">
+                {% for movie in featured_movies %}
+                <article class="article-card">
+                    {% if movie.poster_image %}
+                    <img src="{{ movie.poster_image.url }}" alt="{{ movie.image_alt|default:movie.movie_title }}" class="article-card-image">
+                    {% endif %}
+                    <div class="article-card-content">
+                        <div class="article-card-meta">
+                            <span>{{ movie.published_at|localized_date:"F d, Y" }}</span>
+                            {% if movie.category %}
+                            • <a href="{% url 'reviews:movie_category_detail' movie.category.slug %}">{{ movie.category.name|translate_name }}</a>
+                            {% endif %}
+                        </div>
+                        <h3 class="article-card-title">
+                            <a href="{% url 'reviews:movie_detail' movie.slug %}">{{ movie.title }}</a>
+                        </h3>
+                        <p class="article-card-excerpt">{{ movie.movie_title }} ({{ movie.year }})</p>
+                        <div class="article-card-footer">
+                            <a href="{% url 'reviews:movie_detail' movie.slug %}" class="btn">Read Review</a>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+            <div class="text-center">
+                <a href="{% url 'reviews:movie_list' %}" class="btn btn-secondary">{% if CURRENT_LANG == 'fa' %}مشاهده همه فیلم‌ها{% else %}View All Movies{% endif %}</a>
+            </div>
+        </section>
+        {% endif %}
+    </div>
+
+    <!-- Latest Books and Movies Section -->
+    <div class="latest-reviews-section" style="margin-top: 3rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;">
+            <!-- Latest Book Reviews -->
+            <section class="latest-section">
+                <h2 class="section-title">{% if CURRENT_LANG == 'fa' %}آخرین نقدهای کتاب{% else %}Latest Book Reviews{% endif %}</h2>
+                {% if latest_books %}
+                <div class="article-grid" style="grid-template-columns: 1fr;">
+                    {% for book in latest_books %}
+                    <article class="article-card">
+                        {% if book.cover_image %}
+                        <img src="{{ book.cover_image.url }}" alt="{{ book.image_alt|default:book.book_title }}" class="article-card-image">
+                        {% endif %}
+                        <div class="article-card-content">
+                            <div class="article-card-meta">
+                                <span>{{ book.published_at|localized_date:"F d, Y" }}</span>
+                                {% if book.category %}
+                                • <a href="{% url 'reviews:book_category_detail' book.category.slug %}">{{ book.category.name|translate_name }}</a>
+                                {% endif %}
+                            </div>
+                            <h3 class="article-card-title">
+                                <a href="{% url 'reviews:book_detail' book.slug %}">{{ book.title }}</a>
+                            </h3>
+                            <p class="article-card-excerpt"><strong>{{ book.book_title }}</strong> {% if CURRENT_LANG == 'fa' %}نوشته{% else %}by{% endif %} {{ book.book_author }}</p>
+                            <p class="article-card-excerpt">{{ book.excerpt|truncatewords:15 }}</p>
+                            <div class="article-card-footer">
+                                <a href="{% url 'reviews:book_detail' book.slug %}" class="btn">{% if CURRENT_LANG == 'fa' %}خواندن نقد{% else %}Read Review{% endif %}</a>
+                                <span class="views-pill">
+                                    <span class="views-number">{{ book.views|localized_number }}</span>
+                                    <span class="views-label">{% if CURRENT_LANG == 'fa' %}بازدید{% else %}views{% endif %}</span>
+                                </span>
+                            </div>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+                <div class="text-center" style="margin-top: 1.5rem;">
+                    <a href="{% url 'reviews:book_list' %}" class="btn btn-secondary">{% if CURRENT_LANG == 'fa' %}مشاهده همه کتاب‌ها{% else %}View All Books{% endif %}</a>
+                </div>
+                {% else %}
+                <p style="text-align: center; color: #666; padding: 2rem;">{% if CURRENT_LANG == 'fa' %}هنوز نقد کتابی موجود نیست.{% else %}No book reviews available yet.{% endif %}</p>
+                <div class="text-center">
+                    <a href="{% url 'reviews:book_list' %}" class="btn btn-secondary">{% if CURRENT_LANG == 'fa' %}مرور کتاب‌ها{% else %}Browse Books{% endif %}</a>
+                </div>
+                {% endif %}
+            </section>
+
+            <!-- Latest Movie Reviews -->
+            <section class="latest-section">
+                <h2 class="section-title">{% if CURRENT_LANG == 'fa' %}آخرین نقدهای فیلم{% else %}Latest Movie Reviews{% endif %}</h2>
+                {% if latest_movies %}
+                <div class="article-grid" style="grid-template-columns: 1fr;">
+                    {% for movie in latest_movies %}
+                    <article class="article-card">
+                        {% if movie.poster_image %}
+                        <img src="{{ movie.poster_image.url }}" alt="{{ movie.image_alt|default:movie.movie_title }}" class="article-card-image">
+                        {% endif %}
+                        <div class="article-card-content">
+                            <div class="article-card-meta">
+                                <span>{{ movie.published_at|localized_date:"F d, Y" }}</span>
+                                {% if movie.category %}
+                                • <a href="{% url 'reviews:movie_category_detail' movie.category.slug %}">{{ movie.category.name|translate_name }}</a>
+                                {% endif %}
+                            </div>
+                            <h3 class="article-card-title">
+                                <a href="{% url 'reviews:movie_detail' movie.slug %}">{{ movie.title }}</a>
+                            </h3>
+                            <p class="article-card-excerpt"><strong>{{ movie.movie_title }}</strong> ({{ movie.year }})</p>
+                            <p class="article-card-excerpt">{% if CURRENT_LANG == 'fa' %}کارگردان:{% else %}Director:{% endif %} {{ movie.director }}</p>
+                            <p class="article-card-excerpt">{{ movie.excerpt|truncatewords:15 }}</p>
+                            <div class="article-card-footer">
+                                <a href="{% url 'reviews:movie_detail' movie.slug %}" class="btn">{% if CURRENT_LANG == 'fa' %}خواندن نقد{% else %}Read Review{% endif %}</a>
+                                <span class="views-pill">
+                                    <span class="views-number">{{ movie.views|localized_number }}</span>
+                                    <span class="views-label">{% if CURRENT_LANG == 'fa' %}بازدید{% else %}views{% endif %}</span>
+                                </span>
+                            </div>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+                <div class="text-center" style="margin-top: 1.5rem;">
+                    <a href="{% url 'reviews:movie_list' %}" class="btn btn-secondary">{% if CURRENT_LANG == 'fa' %}مشاهده همه فیلم‌ها{% else %}View All Movies{% endif %}</a>
+                </div>
+                {% else %}
+                <p style="text-align: center; color: #666; padding: 2rem;">{% if CURRENT_LANG == 'fa' %}هنوز نقد فیلمی موجود نیست.{% else %}No movie reviews available yet.{% endif %}</p>
+                <div class="text-center">
+                    <a href="{% url 'reviews:movie_list' %}" class="btn btn-secondary">{% if CURRENT_LANG == 'fa' %}مرور فیلم‌ها{% else %}Browse Movies{% endif %}</a>
+                </div>
+                {% endif %}
+            </section>
+        </div>
+    </div>
+</div>
+
+<style>
+.section-title {
+    font-size: 2rem;
+    font-family: var(--font-serif);
+    margin-bottom: 2rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--accent-color);
+}
+
+.text-center {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.latest-reviews-section {
+    margin-top: 3rem;
+}
+
+.latest-reviews-section > div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+}
+
+@media (max-width: 768px) {
+    .reviews-section {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .latest-reviews-section > div {
+        grid-template-columns: 1fr !important;
+        gap: 2rem;
+    }
+}
+</style>
+{% endblock %}
+

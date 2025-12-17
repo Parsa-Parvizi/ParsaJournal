@@ -1,0 +1,688 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+{% load i18n %}
+{% load core_extras %}
+{% get_current_language as CURRENT_LANG %}
+
+{% block title %}{% if CURRENT_LANG == 'fa' %}مدیریت محتوا{% else %}Content Management{% endif %} - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="admin-article-list">
+    <div class="page-header">
+        <h1 class="article-title">{% if CURRENT_LANG == 'fa' %}مدیریت محتوا{% else %}Content Management{% endif %}</h1>
+        <div class="page-header-actions">
+            <a href="{% url 'admin_panel:dashboard' %}" class="btn btn-secondary">{% if CURRENT_LANG == 'fa' %}بازگشت به داشبورد{% else %}Back to Dashboard{% endif %}</a>
+            <a href="{% url 'admin_panel:article_create' %}" class="btn btn-primary">{% if CURRENT_LANG == 'fa' %}ایجاد مقاله جدید{% else %}Create New Article{% endif %}</a>
+        </div>
+    </div>
+    
+    <!-- Filters and Search -->
+    <div class="filters-section">
+        <form method="get" class="filters-form">
+            <div class="filter-group">
+                <input type="text" name="q" value="{{ search_query }}" placeholder="{% if CURRENT_LANG == 'fa' %}جستجو...{% else %}Search...{% endif %}" class="form-input">
+            </div>
+            
+            <div class="filter-group">
+                <select name="status" class="form-select">
+                    <option value="">{% if CURRENT_LANG == 'fa' %}همه وضعیت‌ها{% else %}All Statuses{% endif %}</option>
+                    {% for status, label in status_choices %}
+                    <option value="{{ status }}" {% if status_filter == status %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <select name="type" class="form-select">
+                    <option value="all" {% if content_type == 'all' %}selected{% endif %}>{% if CURRENT_LANG == 'fa' %}همه محتوا{% else %}All Content{% endif %}</option>
+                    <option value="article" {% if content_type == 'article' %}selected{% endif %}>{% if CURRENT_LANG == 'fa' %}مقالات{% else %}Articles{% endif %}</option>
+                    <option value="book" {% if content_type == 'book' %}selected{% endif %}>{% if CURRENT_LANG == 'fa' %}کتاب‌ها{% else %}Books{% endif %}</option>
+                    <option value="movie" {% if content_type == 'movie' %}selected{% endif %}>{% if CURRENT_LANG == 'fa' %}فیلم‌ها{% else %}Movies{% endif %}</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <select name="category" class="form-select">
+                    <option value="">{% if CURRENT_LANG == 'fa' %}همه دسته‌بندی‌ها{% else %}All Categories{% endif %}</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}" {% if category_filter == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name|translate_name }}</option>
+                    {% endfor %}
+                    {% for category in book_categories %}
+                    <option value="{{ category.id }}" {% if category_filter == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name|translate_name }} ({% if CURRENT_LANG == 'fa' %}کتاب{% else %}Book{% endif %})</option>
+                    {% endfor %}
+                    {% for category in movie_categories %}
+                    <option value="{{ category.id }}" {% if category_filter == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name|translate_name }} ({% if CURRENT_LANG == 'fa' %}فیلم{% else %}Movie{% endif %})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <select name="featured" class="form-select">
+                    <option value="">{% if CURRENT_LANG == 'fa' %}همه محتوا{% else %}All Content{% endif %}</option>
+                    <option value="yes" {% if featured_filter == "yes" %}selected{% endif %}>{% if CURRENT_LANG == 'fa' %}برتر{% else %}Featured{% endif %}</option>
+                    <option value="no" {% if featured_filter == "no" %}selected{% endif %}>{% if CURRENT_LANG == 'fa' %}غیر برتر{% else %}Not Featured{% endif %}</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <select name="order_by" class="form-select">
+                    <option value="-created_at" {% if order_by == "-created_at" %}selected{% endif %}>{% if CURRENT_LANG == 'fa' %}جدیدترین{% else %}Newest{% endif %}</option>
+                    <option value="created_at" {% if order_by == "created_at" %}selected{% endif %}>{% if CURRENT_LANG == 'fa' %}قدیمی‌ترین{% else %}Oldest{% endif %}</option>
+                    <option value="-views" {% if order_by == "-views" %}selected{% endif %}>{% if CURRENT_LANG == 'fa' %}بیشترین بازدید{% else %}Most Views{% endif %}</option>
+                    <option value="views" {% if order_by == "views" %}selected{% endif %}>{% if CURRENT_LANG == 'fa' %}کمترین بازدید{% else %}Least Views{% endif %}</option>
+                    <option value="title" {% if order_by == "title" %}selected{% endif %}>{% if CURRENT_LANG == 'fa' %}عنوان (الف-ی){% else %}Title (A-Z){% endif %}</option>
+                    <option value="-title" {% if order_by == "-title" %}selected{% endif %}>{% if CURRENT_LANG == 'fa' %}عنوان (ی-الف){% else %}Title (Z-A){% endif %}</option>
+                </select>
+            </div>
+            
+            <div class="filter-actions">
+                <button type="submit" class="btn">{% if CURRENT_LANG == 'fa' %}فیلتر{% else %}Filter{% endif %}</button>
+                <a href="{% url 'admin_panel:article_list' %}" class="btn btn-secondary">{% if CURRENT_LANG == 'fa' %}پاک کردن{% else %}Clear{% endif %}</a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Bulk Actions -->
+    <form method="post" action="{% url 'admin_panel:article_bulk_delete' %}" id="bulk-form" style="margin-bottom: 2rem;">
+        {% csrf_token %}
+        <div class="bulk-actions-bar">
+            <button type="submit" class="btn btn-danger" onclick="return confirm('{% if CURRENT_LANG == 'fa' %}آیا مطمئن هستید که می‌خواهید محتوای انتخاب شده را حذف کنید؟{% else %}Are you sure you want to delete the selected content?{% endif %}')">{% if CURRENT_LANG == 'fa' %}حذف انتخاب شده{% else %}Delete Selected{% endif %}</button>
+            <span class="selected-count">0 {% if CURRENT_LANG == 'fa' %}انتخاب شده{% else %}selected{% endif %}</span>
+            <button type="button" id="select-all-btn" class="btn btn-select-all">
+                <span class="select-all-text">{% if CURRENT_LANG == 'fa' %}انتخاب همه{% else %}Select All{% endif %}</span>
+            </button>
+        </div>
+    </form>
+    
+    <!-- Articles Grid -->
+    {% if articles %}
+    <div class="article-grid">
+        {% for article in articles %}
+        <article class="article-card admin-article-card">
+            {% if article|get_model_name == 'Article' %}
+                {% if article.featured_image %}
+                <img src="{{ article.featured_image.url }}" alt="{{ article.image_alt|default:article.title }}" class="article-card-image">
+                {% endif %}
+            {% elif article|get_model_name == 'BookReview' %}
+                {% if article.cover_image %}
+                <img src="{{ article.cover_image.url }}" alt="{{ article.image_alt|default:article.book_title }}" class="article-card-image">
+                {% endif %}
+            {% elif article|get_model_name == 'MovieReview' %}
+                {% if article.poster_image %}
+                <img src="{{ article.poster_image.url }}" alt="{{ article.image_alt|default:article.movie_title }}" class="article-card-image">
+                {% endif %}
+            {% endif %}
+            <div class="article-card-content">
+                <div class="article-card-meta">
+                    {% if article|get_model_name == 'Article' %}
+                        <span>{{ article.published_at|localized_date:"F d, Y"|default:"{% if CURRENT_LANG == 'fa' %}منتشر نشده{% else %}Not published{% endif %}" }}</span> • 
+                        <span><a href="{% url 'articles:author_detail' article.author.slug %}">{{ article.author.display_name }}</a></span>
+                        {% if article.category %}
+                        • <a href="{% url 'articles:category_detail' article.category.slug %}">{{ article.category.name|translate_name }}</a>
+                        {% endif %}
+                    {% elif article|get_model_name == 'BookReview' %}
+                        <span>{{ article.published_at|localized_date:"F d, Y"|default:"{% if CURRENT_LANG == 'fa' %}منتشر نشده{% else %}Not published{% endif %}" }}</span> • 
+                        <span><a href="{% url 'articles:author_detail' article.author.slug %}">{{ article.author.display_name }}</a></span>
+                        {% if article.category %}
+                        • <a href="{% url 'reviews:book_category_detail' article.category.slug %}">{{ article.category.name|translate_name }}</a>
+                        {% endif %}
+                    {% elif article|get_model_name == 'MovieReview' %}
+                        <span>{{ article.published_at|localized_date:"F d, Y"|default:"{% if CURRENT_LANG == 'fa' %}منتشر نشده{% else %}Not published{% endif %}" }}</span> • 
+                        <span><a href="{% url 'articles:author_detail' article.author.slug %}">{{ article.author.display_name }}</a></span>
+                        {% if article.category %}
+                        • <a href="{% url 'reviews:movie_category_detail' article.category.slug %}">{{ article.category.name|translate_name }}</a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                <h3 class="article-card-title">
+                    {% if article|get_model_name == 'Article' %}
+                        <a href="{% url 'admin_panel:article_detail' article.pk %}">{{ article.title }}</a>
+                    {% elif article|get_model_name == 'BookReview' %}
+                        <a href="#">{{ article.title }} - {% if CURRENT_LANG == 'fa' %}کتاب{% else %}Book{% endif %}</a>
+                    {% elif article|get_model_name == 'MovieReview' %}
+                        <a href="#">{{ article.title }} - {% if CURRENT_LANG == 'fa' %}فیلم{% else %}Movie{% endif %}</a>
+                    {% endif %}
+                </h3>
+                <p class="article-card-excerpt">
+                    {% if article|get_model_name == 'Article' %}
+                        {{ article.excerpt|truncatewords:20 }}
+                    {% elif article|get_model_name == 'BookReview' %}
+                        <strong>{{ article.book_title }}</strong> {% if CURRENT_LANG == 'fa' %}نوشته{% else %}by{% endif %} {{ article.book_author }}
+                    {% elif article|get_model_name == 'MovieReview' %}
+                        <strong>{{ article.movie_title }}</strong> ({{ article.year }}) - {{ article.director }}
+                    {% endif %}
+                </p>
+                
+                <!-- Admin Badges -->
+                <div class="admin-badges" style="margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    {% if article|get_model_name == 'Article' %}
+                        <span class="status-badge status-{{ article.status }}">{{ article.get_status_display }}</span>
+                    {% elif article|get_model_name == 'BookReview' %}
+                        <span class="status-badge {% if article.is_published %}status-published{% else %}status-draft{% endif %}">
+                            {% if CURRENT_LANG == 'fa' %}{% if article.is_published %}منتشر شده{% else %}پیش‌نویس{% endif %}{% else %}{% if article.is_published %}Published{% else %}Draft{% endif %}{% endif %}
+                        </span>
+                    {% elif article|get_model_name == 'MovieReview' %}
+                        <span class="status-badge {% if article.is_published %}status-published{% else %}status-draft{% endif %}">
+                            {% if CURRENT_LANG == 'fa' %}{% if article.is_published %}منتشر شده{% else %}پیش‌نویس{% endif %}{% else %}{% if article.is_published %}Published{% else %}Draft{% endif %}{% endif %}
+                        </span>
+                    {% endif %}
+                    {% if article.is_featured %}
+                    <span class="badge badge-featured">⭐ {% if CURRENT_LANG == 'fa' %}برتر{% else %}Featured{% endif %}</span>
+                    {% endif %}
+                    <span class="badge badge-views">{{ article.views|localized_number }} {% if CURRENT_LANG == 'fa' %}بازدید{% else %}views{% endif %}</span>
+                </div>
+                
+                <div class="article-card-footer admin-card-footer">
+                    <div class="admin-card-actions">
+                        {% if article|get_model_name == 'Article' %}
+                            <a href="{% url 'admin_panel:article_edit' article.pk %}" class="btn-small">{% if CURRENT_LANG == 'fa' %}ویرایش{% else %}Edit{% endif %}</a>
+                            <a href="{% url 'admin_panel:article_toggle_featured' article.pk %}" class="btn-small btn-featured">
+                                {% if article.is_featured %}{% if CURRENT_LANG == 'fa' %}حذف از برتر{% else %}Unfeature{% endif %}{% else %}{% if CURRENT_LANG == 'fa' %}برتر کردن{% else %}Feature{% endif %}{% endif %}
+                            </a>
+                            <form method="post" action="{% url 'admin_panel:article_change_status' article.pk %}" style="display: inline;">
+                                {% csrf_token %}
+                                <select name="status" onchange="this.form.submit()" class="status-select">
+                                    {% for status, label in status_choices %}
+                                    <option value="{{ status }}" {% if article.status == status %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </form>
+                            <a href="{% url 'admin_panel:article_delete' article.pk %}" class="btn-small btn-danger" onclick="return confirm('{% if CURRENT_LANG == 'fa' %}آیا مطمئن هستید که می‌خواهید این مقاله را حذف کنید؟{% else %}Are you sure you want to delete this article?{% endif %}')">{% if CURRENT_LANG == 'fa' %}حذف{% else %}Delete{% endif %}</a>
+                        {% else %}
+                            <span class="btn-small" style="opacity: 0.6;">{% if CURRENT_LANG == 'fa' %}ویرایش از پنل Django{% else %}Edit from Django Admin{% endif %}</span>
+                        {% endif %}
+                    </div>
+                    {% if article|get_model_name == 'Article' %}
+                        <input type="hidden" class="article-checkbox" data-article-id="{{ article.pk }}" value="{{ article.pk }}">
+                    {% endif %}
+                </div>
+                
+                {% if article|get_model_name == 'Article' and article.tags.all %}
+                <div class="article-tags" style="margin-top: 1rem;">
+                    {% for tag in article.tags.all %}
+                    <a href="{% url 'articles:tag_detail' tag.slug %}" class="tag">{{ tag.name|translate_name }}</a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-articles">
+        <p>{% if CURRENT_LANG == 'fa' %}محتوا یافت نشد.{% else %}No content found.{% endif %}</p>
+    </div>
+    {% endif %}
+    
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="pagination">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if featured_filter %}&featured={{ featured_filter }}{% endif %}{% if order_by %}&order_by={{ order_by }}{% endif %}{% if content_type %}&type={{ content_type }}{% endif %}">{% if CURRENT_LANG == 'fa' %}قبلی{% else %}Previous{% endif %}</a>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <span class="current">{{ num|localized_number }}</span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if featured_filter %}&featured={{ featured_filter }}{% endif %}{% if order_by %}&order_by={{ order_by }}{% endif %}{% if content_type %}&type={{ content_type }}{% endif %}">{{ num|localized_number }}</a>
+                {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if featured_filter %}&featured={{ featured_filter }}{% endif %}{% if order_by %}&order_by={{ order_by }}{% endif %}{% if content_type %}&type={{ content_type }}{% endif %}">{% if CURRENT_LANG == 'fa' %}بعدی{% else %}Next{% endif %}</a>
+                {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.admin-article-list {
+    padding: 2rem 0;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.page-header .article-title {
+    margin: 0;
+    flex: 1;
+    min-width: 200px;
+    font-size: 2.5rem;
+    font-family: var(--font-serif);
+    line-height: 1.2;
+}
+
+.page-header-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.filters-section {
+    background: var(--bg-light);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.filters-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    align-items: end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group label {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.bulk-actions-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--bg-light);
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.selected-count {
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.admin-article-card {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.admin-article-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.admin-article-card.selected {
+    background: rgba(212, 175, 55, 0.15);
+}
+
+.admin-article-card > * {
+    pointer-events: none;
+}
+
+.admin-article-card a,
+.admin-article-card button,
+.admin-article-card form,
+.admin-article-card select {
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.admin-badges {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.status-published {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-draft {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-archived {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.badge-featured {
+    background: #ffc107;
+    color: #000;
+}
+
+.badge-views {
+    background: var(--bg-light);
+    color: var(--text-color);
+}
+
+.admin-card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.admin-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.article-checkbox {
+    display: none;
+}
+
+.btn-select-all {
+    background: var(--accent-color);
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-select-all:hover {
+    background: #b8941f;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(212, 175, 55, 0.3);
+}
+
+.btn-select-all.active {
+    background: #28a745;
+}
+
+.btn-select-all.active:hover {
+    background: #218838;
+}
+
+.admin-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+}
+
+.btn-small {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    background: var(--accent-color);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-small:hover {
+    background: #b8941f;
+}
+
+.btn-featured {
+    background: #ffc107;
+    color: #000;
+}
+
+.btn-featured:hover {
+    background: #e0a800;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
+.status-select {
+    padding: 0.5rem 0.9rem;
+    border: 2px solid var(--accent-color);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    background: var(--bg-color);
+    color: var(--text-color);
+    transition: all 0.3s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23d4af37' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.6rem center;
+    background-size: 10px;
+    padding-right: 2.2rem;
+    min-width: 130px;
+}
+
+.status-select:hover {
+    background-color: rgba(212, 175, 55, 0.05);
+    border-color: #b8941f;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.2);
+}
+
+.status-select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+}
+
+.no-articles {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-light);
+}
+
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .page-header .article-title {
+        font-size: 2rem;
+    }
+    
+    .page-header-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .page-header-actions .btn {
+        width: 100%;
+    }
+    
+    .filters-form {
+        grid-template-columns: 1fr;
+    }
+    
+    .bulk-actions-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .admin-card-actions {
+        flex-direction: column;
+    }
+    
+    .admin-card-actions .btn-small,
+    .admin-card-actions .status-select {
+        width: 100%;
+    }
+    
+    .article-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Select all button
+const selectAllBtn = document.getElementById('select-all-btn');
+const selectAllText = selectAllBtn.querySelector('.select-all-text');
+let allSelected = false;
+
+selectAllBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    const cards = document.querySelectorAll('.admin-article-card');
+    const bulkForm = document.getElementById('bulk-form');
+    allSelected = !allSelected;
+    
+    cards.forEach(card => {
+        const cardCheckbox = card.querySelector('.article-checkbox');
+        const articleId = cardCheckbox?.getAttribute('data-article-id');
+        
+        if (allSelected) {
+            card.classList.add('selected');
+            // Ensure checkbox exists in form
+            let formCheckbox = bulkForm.querySelector(`input[data-article-id="${articleId}"]`);
+            if (!formCheckbox && articleId) {
+                formCheckbox = document.createElement('input');
+                formCheckbox.type = 'hidden';
+                formCheckbox.name = 'article_ids';
+                formCheckbox.value = articleId;
+                formCheckbox.className = 'article-checkbox';
+                formCheckbox.setAttribute('data-article-id', articleId);
+                bulkForm.appendChild(formCheckbox);
+            }
+        } else {
+            card.classList.remove('selected');
+            const formCheckbox = bulkForm.querySelector(`input[data-article-id="${articleId}"]`);
+            if (formCheckbox) {
+                formCheckbox.remove();
+            }
+        }
+    });
+    
+    if (allSelected) {
+        selectAllText.textContent = '{% if CURRENT_LANG == 'fa' %}لغو انتخاب همه{% else %}Deselect All{% endif %}';
+        selectAllBtn.classList.add('active');
+    } else {
+        selectAllText.textContent = '{% if CURRENT_LANG == 'fa' %}انتخاب همه{% else %}Select All{% endif %}';
+        selectAllBtn.classList.remove('active');
+    }
+    
+    updateSelectedCount();
+});
+
+// Make entire article card clickable for selection
+document.querySelectorAll('.admin-article-card').forEach(card => {
+    card.addEventListener('click', function(e) {
+        // Don't trigger if clicking on interactive elements
+        if (e.target.tagName === 'A' || 
+            e.target.tagName === 'BUTTON' || 
+            e.target.tagName === 'SELECT' ||
+            e.target.tagName === 'INPUT' ||
+            e.target.closest('a') ||
+            e.target.closest('button') ||
+            e.target.closest('form') ||
+            e.target.closest('select')) {
+            return;
+        }
+        
+        const isSelected = card.classList.contains('selected');
+        const bulkForm = document.getElementById('bulk-form');
+        const cardCheckbox = card.querySelector('.article-checkbox');
+        const articleId = cardCheckbox?.getAttribute('data-article-id');
+        
+        if (isSelected) {
+            card.classList.remove('selected');
+            // Remove checkbox from form
+            const formCheckbox = bulkForm.querySelector(`input[data-article-id="${articleId}"]`);
+            if (formCheckbox) {
+                formCheckbox.remove();
+            }
+        } else {
+            card.classList.add('selected');
+            // Add checkbox to form
+            let formCheckbox = bulkForm.querySelector(`input[data-article-id="${articleId}"]`);
+            if (!formCheckbox && articleId) {
+                formCheckbox = document.createElement('input');
+                formCheckbox.type = 'hidden';
+                formCheckbox.name = 'article_ids';
+                formCheckbox.value = articleId;
+                formCheckbox.className = 'article-checkbox';
+                formCheckbox.setAttribute('data-article-id', articleId);
+                bulkForm.appendChild(formCheckbox);
+            }
+        }
+        updateSelectedCount();
+        updateSelectAllButton();
+    });
+});
+
+function updateSelectedCount() {
+    const selected = document.querySelectorAll('.admin-article-card.selected').length;
+    document.querySelector('.selected-count').textContent = selected + ' {% if CURRENT_LANG == 'fa' %}انتخاب شده{% else %}selected{% endif %}';
+}
+
+function updateSelectAllButton() {
+    const cards = document.querySelectorAll('.admin-article-card');
+    const selected = document.querySelectorAll('.admin-article-card.selected').length;
+    
+    if (selected === 0) {
+        allSelected = false;
+        selectAllText.textContent = '{% if CURRENT_LANG == 'fa' %}انتخاب همه{% else %}Select All{% endif %}';
+        selectAllBtn.classList.remove('active');
+    } else if (selected === cards.length) {
+        allSelected = true;
+        selectAllText.textContent = '{% if CURRENT_LANG == 'fa' %}لغو انتخاب همه{% else %}Deselect All{% endif %}';
+        selectAllBtn.classList.add('active');
+    } else {
+        // Partial selection - button shows "Select All" but isn't active
+        allSelected = false;
+        selectAllText.textContent = '{% if CURRENT_LANG == 'fa' %}انتخاب همه{% else %}Select All{% endif %}';
+        selectAllBtn.classList.remove('active');
+    }
+}
+
+// Initialize
+updateSelectedCount();
+updateSelectAllButton();
+</script>
+{% endblock %}

@@ -1,0 +1,407 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+
+{% block title %}Statistics - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="admin-statistics">
+    <div class="page-header">
+        <h1 class="page-title">Statistics</h1>
+        <a href="{% url 'admin_panel:dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+    
+    <!-- Overall Statistics -->
+    <div class="stats-section">
+        <h2 class="section-title">Overall Statistics</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-content">
+                    <h3>Total Articles</h3>
+                    <p class="stat-number">{{ total_articles }}</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-content">
+                    <h3>Published Articles</h3>
+                    <p class="stat-number">{{ published_articles }}</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-content">
+                    <h3>Draft Articles</h3>
+                    <p class="stat-number">{{ draft_articles }}</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-content">
+                    <h3>Archived Articles</h3>
+                    <p class="stat-number">{{ archived_articles }}</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-content">
+                    <h3>Total Views</h3>
+                    <p class="stat-number">{{ total_views }}</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-content">
+                    <h3>Average Views</h3>
+                    <p class="stat-number">{{ avg_views }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Top Articles -->
+    <div class="stats-section">
+        <h2 class="section-title">Top Articles by Views</h2>
+        <div class="table-container">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Category</th>
+                        <th>Views</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for article in top_articles %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <a href="{% url 'admin_panel:article_detail' article.pk %}">{{ article.title }}</a>
+                        </td>
+                        <td>{{ article.author.display_name }}</td>
+                        <td>{{ article.category.name|default:"-" }}</td>
+                        <td>{{ article.views }}</td>
+                        <td>
+                            <span class="status-badge status-{{ article.status }}">{{ article.get_status_display }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">No articles found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Articles by Category and Author -->
+    <div class="stats-section">
+        <div class="two-column-grid">
+            <!-- Articles by Category -->
+            <div class="stats-subsection">
+                <h2 class="section-title">Articles by Category</h2>
+                <div class="table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Number of Articles</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category in articles_by_category %}
+                            <tr>
+                                <td>{{ category.name }}</td>
+                                <td>{{ category.article_count }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-center">No categories found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Articles by Author -->
+            <div class="stats-subsection">
+                <h2 class="section-title">Articles by Author</h2>
+                <div class="table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Author</th>
+                                <th>Number of Articles</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for author in articles_by_author %}
+                            <tr>
+                                <td>{{ author.display_name }}</td>
+                                <td>{{ author.article_count }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-center">No authors found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Articles -->
+    <div class="stats-section">
+        <h2 class="section-title">Recent Articles</h2>
+        <div class="table-container">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for article in recent_articles %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'admin_panel:article_detail' article.pk %}">{{ article.title }}</a>
+                        </td>
+                        <td>{{ article.author.display_name }}</td>
+                        <td>{{ article.category.name|default:"-" }}</td>
+                        <td>
+                            <span class="status-badge status-{{ article.status }}">{{ article.get_status_display }}</span>
+                        </td>
+                        <td>{{ article.created_at|date:"Y/m/d H:i" }}</td>
+                        <td>
+                            <a href="{% url 'admin_panel:article_edit' article.pk %}" class="btn-small">Edit</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">No articles found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.admin-statistics {
+    padding: 2rem 0;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.page-title {
+    margin: 0;
+    font-size: 2rem;
+    color: var(--primary-color);
+}
+
+.stats-section {
+    margin-bottom: 3rem;
+}
+
+.two-column-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+}
+
+.stats-subsection {
+    display: flex;
+    flex-direction: column;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: 0.5rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.stat-card {
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+}
+
+.stat-content h3 {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-bottom: 0.5rem;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.admin-table thead {
+    background: var(--bg-light);
+}
+
+.admin-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.admin-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.admin-table tbody tr:hover {
+    background: var(--bg-light);
+}
+
+.admin-table a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.admin-table a:hover {
+    color: var(--accent-color);
+}
+
+.admin-table a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent-color), transparent);
+    transition: width 0.3s ease;
+    border-radius: 2px;
+}
+
+.admin-table a:hover::after {
+    width: 100%;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.status-published {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-draft {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-archived {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.btn-small {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: var(--accent-color);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-small:hover {
+    background: #b8941f;
+}
+
+.text-center {
+    text-align: center;
+    color: var(--text-light);
+}
+
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .two-column-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+}
+</style>
+{% endblock %}

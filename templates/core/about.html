@@ -1,0 +1,358 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+{% load core_extras %}
+{% get_current_language as CURRENT_LANG %}
+
+{% block title %}
+{% if CURRENT_LANG == 'fa' %}
+درباره - {{ site_settings.site_name|localized_site_name }}
+{% else %}
+About - {{ site_settings.site_name|localized_site_name }}
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <article class="article-detail about-page">
+        <header class="about-header">
+            <h1 class="article-title">
+                {% if CURRENT_LANG == 'fa' %}
+                درباره پارسا ژورنال
+                {% else %}
+                About Parsa Journal
+                {% endif %}
+            </h1>
+            {% if site_settings and site_settings.site_tagline %}
+            <p class="about-tagline">{{ site_settings.site_tagline }}</p>
+            {% endif %}
+        </header>
+        
+        {% if site_settings and site_settings.about_content %}
+        <div class="article-content">
+            {{ site_settings.about_content|linebreaks }}
+        </div>
+        {% else %}
+        <div class="article-content">
+            {% if CURRENT_LANG == 'fa' %}
+            <!-- Persian Story Section -->
+            <section class="about-section">
+                <h2>چرا اینجا شکل گرفت؟</h2>
+                <p>هر داستانی شایسته یک گفت‌وگوی عمیق است؛ هر کتابی که زاویه نگاهت را عوض می‌کند، هر فیلمی که وادارت می‌کند دوباره فکر کنی، و هر ایده‌ای که ذهن را به چالش می‌کشد. پارسا ژورنال نقطه شروع همین گفت‌وگوهاست.</p>
+                <p>این‌جا فقط یک وبلاگ نقد نیست؛ فضایی است که تفکر تحلیلی و تجربه شخصی کنار هم قرار می‌گیرند و تحلیل به معنای از دست دادن پیوند انسانی با متن و تصویر نیست.</p>
+            </section>
+
+            <!-- Persian Value Proposition -->
+            <section class="about-section">
+                <h2>اینجا چه پیدا می‌کنید</h2>
+                <div class="value-grid">
+                    <div class="value-item">
+                        <h3>تحلیل عمیق</h3>
+                        <p>نوشته‌هایی فراتر از خلاصه‌گویی؛ سراغ لایه‌ها، زمینه و پرسش‌های اصلی هر اثر می‌رویم.</p>
+                    </div>
+                    <div class="value-item">
+                        <h3>نقد صادقانه</h3>
+                        <p>بدون محتوای سفارشی یا تعصب؛ فقط تجربه‌ای که ارزش وقت گذاشتن دارد با شما به اشتراک گذاشته می‌شود.</p>
+                    </div>
+                    <div class="value-item">
+                        <h3>نگاه متنوع</h3>
+                        <p>از کلاسیک‌های ادبی تا سینمای معاصر؛ روایت‌هایی که به چالش می‌کشند و الهام می‌بخشند.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Persian Personal Connection -->
+            <section class="about-section">
+                <h2>نویسنده پشت نوشته‌ها</h2>
+                <p>اینجا برای نسخه پیچیدن نیامده‌ام؛ فقط پرسش‌هایی را که درگیرشان هستم، ارتباطاتی که پیدا می‌کنم و ایده‌هایی که ذهنم را مشغول می‌کند به اشتراک می‌گذارم.</p>
+                <p>اگر دنبال کتاب بعدی خود هستید، می‌خواهید فیلمی را عمیق‌تر بفهمید یا صرفاً از خواندن درباره فرهنگ و روایت لذت می‌برید، جای درستی آمده‌اید.</p>
+            </section>
+
+            <!-- Persian Social Proof & Connection -->
+            <section class="about-section">
+                <h2>بیایید در ارتباط باشیم</h2>
+                <p>اگر نظری، پرسشی یا پیشنهادی دارید خوشحال می‌شوم بشنوم؛ بهترین گفت‌وگوها زمانی شکل می‌گیرند که با هم وارد بحث شویم.</p>
+                <div class="social-connect">
+                    {% if site_settings %}
+                    <div class="social-links-about">
+                        {% if site_settings.instagram_url %}
+                        <a href="{{ site_settings.instagram_url }}" target="_blank" rel="noopener" class="social-link instagram" aria-label="Instagram">
+                            <img src="{% static 'images/insta.svg' %}" alt="Instagram" width="24" height="24">
+                            <span>دنبال کردن در اینستاگرام</span>
+                        </a>
+                        {% endif %}
+                        {% if site_settings.linkedin_url %}
+                        <a href="{{ site_settings.linkedin_url }}" target="_blank" rel="noopener" class="social-link linkedin" aria-label="LinkedIn">
+                            <img src="{% static 'images/linkedin.svg' %}" alt="LinkedIn" width="24" height="24">
+                            <span>ارتباط در لینکدین</span>
+                        </a>
+                        {% endif %}
+                        {% if site_settings.contact_email %}
+                        <a href="mailto:{{ site_settings.contact_email }}" class="social-link email" aria-label="Email">
+                            <img src="{% static 'images/gmail.svg' %}" alt="Email" width="24" height="24">
+                            <span>ارسال ایمیل</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- Persian CTA Section -->
+            <section class="about-section cta-section">
+                <h2>از همین حالا شروع کن</h2>
+                <p>آماده‌ای عمیق‌تر جست‌وجو کنی؟ جدیدترین مقالات و نقدها را بخوان یا بر اساس دسته‌بندی جلو برو.</p>
+                <div class="cta-buttons">
+                    <a href="{% url 'articles:article_list' %}" class="btn btn-primary">خواندن مقالات</a>
+                    <a href="{% url 'reviews:book_list' %}" class="btn btn-secondary">نقد کتاب</a>
+                    <a href="{% url 'reviews:movie_list' %}" class="btn btn-secondary">نقد فیلم</a>
+                </div>
+            </section>
+            {% else %}
+            <!-- Story Section -->
+            <section class="about-section">
+                <h2>Why This Exists</h2>
+                <p>Every story deserves a thoughtful conversation. Every book that changes your perspective, every film that makes you question, every idea that shifts your worldview—they all start somewhere. Parsa Journal is where those conversations begin.</p>
+                <p>This isn't just another review site. It's a space where critical thinking meets personal experience, where analysis doesn't mean losing the human connection to what we read and watch.</p>
+            </section>
+
+            <!-- Value Proposition -->
+            <section class="about-section">
+                <h2>What You'll Find Here</h2>
+                <div class="value-grid">
+                    <div class="value-item">
+                        <h3>Deep-Dive Analysis</h3>
+                        <p>Articles that go beyond surface-level summaries. We explore themes, context, and the questions that matter.</p>
+                    </div>
+                    <div class="value-item">
+                        <h3>Honest Reviews</h3>
+                        <p>No sponsored content, no hidden agendas. Just genuine thoughts on books and films worth your time.</p>
+                    </div>
+                    <div class="value-item">
+                        <h3>Diverse Perspectives</h3>
+                        <p>From literary classics to contemporary cinema, we cover stories that challenge and inspire.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Personal Connection -->
+            <section class="about-section">
+                <h2>The Person Behind the Words</h2>
+                <p>I'm not here to tell you what to think. Instead, I'm sharing the questions I'm asking, the connections I'm making, and the ideas that keep me up at night.</p>
+                <p>Whether you're looking for your next great read, want to understand a film on a deeper level, or simply enjoy thoughtful writing about culture and storytelling—you're in the right place.</p>
+            </section>
+
+            <!-- Social Proof & Connection -->
+            <section class="about-section">
+                <h2>Let's Connect</h2>
+                <p>Thoughts, questions, or recommendations? I'd love to hear from you. The best conversations happen when we engage with ideas together.</p>
+                <div class="social-connect">
+                    {% if site_settings %}
+                    <div class="social-links-about">
+                        {% if site_settings.instagram_url %}
+                        <a href="{{ site_settings.instagram_url }}" target="_blank" rel="noopener" class="social-link instagram" aria-label="Instagram">
+                            <img src="{% static 'images/insta.svg' %}" alt="Instagram" width="24" height="24">
+                            <span>Follow on Instagram</span>
+                        </a>
+                        {% endif %}
+                        {% if site_settings.linkedin_url %}
+                        <a href="{{ site_settings.linkedin_url }}" target="_blank" rel="noopener" class="social-link linkedin" aria-label="LinkedIn">
+                            <img src="{% static 'images/linkedin.svg' %}" alt="LinkedIn" width="24" height="24">
+                            <span>Connect on LinkedIn</span>
+                        </a>
+                        {% endif %}
+                        {% if site_settings.contact_email %}
+                        <a href="mailto:{{ site_settings.contact_email }}" class="social-link email" aria-label="Email">
+                            <img src="{% static 'images/gmail.svg' %}" alt="Email" width="24" height="24">
+                            <span>Send an Email</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- CTA Section -->
+            <section class="about-section cta-section">
+                <h2>Start Exploring</h2>
+                <p>Ready to dive in? Browse the latest articles, discover new books and films, or explore by category.</p>
+                <div class="cta-buttons">
+                    <a href="{% url 'articles:article_list' %}" class="btn btn-primary">Read Articles</a>
+                    <a href="{% url 'reviews:book_list' %}" class="btn btn-secondary">Book Reviews</a>
+                    <a href="{% url 'reviews:movie_list' %}" class="btn btn-secondary">Movie Reviews</a>
+                </div>
+            </section>
+            {% endif %}
+        </div>
+        {% endif %}
+    </article>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.about-page {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.about-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid var(--accent-color);
+}
+
+.about-tagline {
+    font-size: 1.25rem;
+    color: var(--text-light);
+    font-style: italic;
+    margin-top: 1rem;
+}
+
+.about-section {
+    margin-bottom: 3rem;
+}
+
+.about-section h2 {
+    font-size: 1.75rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    font-family: var(--font-serif);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.about-section p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+    color: var(--text-color);
+}
+
+.value-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.value-item {
+    background: var(--bg-light);
+    padding: 2rem;
+    border-radius: 8px;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.value-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.value-item h3 {
+    font-size: 1.3rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-family: var(--font-serif);
+}
+
+.value-item p {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--text-color);
+    margin: 0;
+}
+
+.social-connect {
+    margin-top: 2rem;
+}
+
+.social-links-about {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.social-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--bg-light);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-color);
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.social-link:hover {
+    border-color: var(--accent-color);
+    background: rgba(212, 175, 55, 0.05);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+}
+
+.social-link img {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.cta-section {
+    background: var(--bg-light);
+    padding: 3rem;
+    border-radius: 12px;
+    text-align: center;
+    margin-top: 4rem;
+}
+
+.cta-section h2 {
+    border: none;
+    padding: 0;
+    margin-bottom: 1rem;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+}
+
+.cta-buttons .btn {
+    min-width: 150px;
+}
+
+@media (max-width: 768px) {
+    .value-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .social-links-about {
+        flex-direction: column;
+    }
+    
+    .social-link {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .cta-buttons {
+        flex-direction: column;
+    }
+    
+    .cta-buttons .btn {
+        width: 100%;
+    }
+    
+    .cta-section {
+        padding: 2rem 1.5rem;
+    }
+}
+</style>
+{% endblock %}
+

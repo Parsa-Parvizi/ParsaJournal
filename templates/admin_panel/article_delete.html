@@ -1,0 +1,132 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+
+{% block title %}Delete Article: {{ article.title }} - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="admin-article-delete">
+    <div class="page-header">
+        <h1 class="page-title">Delete Article</h1>
+        <a href="{% url 'admin_panel:article_list' %}" class="btn btn-secondary">Back to List</a>
+    </div>
+    
+    <div class="delete-confirmation">
+        <div class="warning-box">
+            <h2>⚠️ Warning</h2>
+            <p>Are you sure you want to delete this article? This action cannot be undone.</p>
+        </div>
+        
+        <div class="article-info">
+            <h3>Article Information:</h3>
+            <div class="info-item">
+                <strong>Title:</strong>
+                <span>{{ article.title }}</span>
+            </div>
+            <div class="info-item">
+                <strong>Author:</strong>
+                <span>{{ article.author.display_name }}</span>
+            </div>
+            <div class="info-item">
+                <strong>Status:</strong>
+                <span class="status-badge status-{{ article.status }}">{{ article.get_status_display }}</span>
+            </div>
+            <div class="info-item">
+                <strong>Views:</strong>
+                <span>{{ article.views }}</span>
+            </div>
+            <div class="info-item">
+                <strong>Created At:</strong>
+                <span>{{ article.created_at|date:"Y/m/d H:i" }}</span>
+            </div>
+        </div>
+        
+        <form method="post" class="delete-form">
+            {% csrf_token %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                <a href="{% url 'admin_panel:article_list' %}" class="btn btn-secondary">Cancel</a>
+                <a href="{% url 'admin_panel:article_detail' article.pk %}" class="btn btn-primary">View Article</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.admin-article-delete {
+    padding: 2rem 0;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.delete-confirmation {
+    background: var(--bg-light);
+    padding: 2rem;
+    border-radius: 8px;
+}
+
+.warning-box {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.warning-box h2 {
+    color: #856404;
+    margin-bottom: 1rem;
+}
+
+.warning-box p {
+    color: #856404;
+    font-size: 1.1rem;
+}
+
+.article-info {
+    margin-bottom: 2rem;
+}
+
+.article-info h3 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-item strong {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.delete-form {
+    margin-top: 2rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+@media (max-width: 768px) {
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .form-actions .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

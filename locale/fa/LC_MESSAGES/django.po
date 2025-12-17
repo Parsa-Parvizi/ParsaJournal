@@ -1,0 +1,92 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-01-01 12:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: fa\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n==0 || n==1);\n"
+
+#: templates/base.html
+msgid "Home"
+msgstr "خانه"
+
+#: templates/base.html
+msgid "Articles"
+msgstr "مقالات"
+
+#: templates/base.html
+msgid "Books"
+msgstr "کتاب‌ها"
+
+#: templates/base.html
+msgid "Movies"
+msgstr "فیلم‌ها"
+
+#: templates/base.html
+msgid "About"
+msgstr "درباره"
+
+#: templates/base.html
+msgid "Contact"
+msgstr "تماس"
+
+#: templates/base.html
+msgid "Login"
+msgstr "ورود"
+
+#: templates/base.html
+msgid "Search..."
+msgstr "جستجو..."
+
+#: templates/base.html
+msgid "Search"
+msgstr "جستجو"
+
+#: templates/base.html
+msgid "Personal journalism and reviews"
+msgstr "روزنامه‌نگاری و نقد شخصی"
+
+#: templates/base.html
+msgid "Quick Links"
+msgstr "لینک‌های سریع"
+
+#: templates/base.html
+msgid "Book Reviews"
+msgstr "نقد کتاب"
+
+#: templates/base.html
+msgid "Movie Reviews"
+msgstr "نقد فیلم"
+
+#: templates/base.html
+msgid "Newsletter"
+msgstr "خبرنامه"
+
+#: templates/base.html
+msgid "Subscribe to get the latest articles and reviews."
+msgstr "برای دریافت آخرین مقالات و نقدها مشترک شوید."
+
+#: templates/base.html
+msgid "Your email"
+msgstr "ایمیل شما"
+
+#: templates/base.html
+msgid "Subscribe"
+msgstr "عضویت"
+
+#: templates/base.html
+msgid "All rights reserved."
+msgstr "تمام حقوق محفوظ است."
+
