@@ -10,8 +10,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Security Settings
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-$sb=%hp(o64%4gthyfscor*g7ze=$#$w-hj6x(!n99wxm8(7ad')
-DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'parsajournal.ir,www.parsajournal.ir,localhost,127.0.0.1').split(',')
+DEBUG = False
+ALLOWED_HOSTS = https://parsajournal.liara.run/
 
 # Admin Security Settings
 ADMIN_IP_WHITELIST = os.getenv('ADMIN_IP_WHITELIST', '').split(',') if os.getenv('ADMIN_IP_WHITELIST') else []
