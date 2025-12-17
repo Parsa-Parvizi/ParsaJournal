@@ -214,3 +214,5 @@ PAGINATION_PER_PAGE = 10
 
 # Create logs directory if it doesn't exist
 os.makedirs(BASE_DIR / 'logs', exist_ok=True)
+
+LOG_DIR = Path("/var/log/app")
