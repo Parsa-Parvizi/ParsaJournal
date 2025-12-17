@@ -28,9 +28,7 @@ services:
     restart: unless-stopped
     command: gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 config.wsgi:application
     volumes:
-      - .:/app
-      - static_volume:/app/staticfiles
-      - media_volume:/app/media
+      - logs_volume:/app/logs
     ports:
       - "8000:8000"
     env_file:
@@ -64,11 +62,7 @@ services:
       - parsajournal_network
 
 volumes:
-  postgres_data:
-    driver: local
-  static_volume:
-    driver: local
-  media_volume:
+  logs_volume:
     driver: local
 
 networks:
