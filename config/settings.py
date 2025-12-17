@@ -176,15 +176,8 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {'simple': {'format': '[{asctime}] {levelname} {name}: {message}', 'style': '{'}},
-    'handlers': {
-        'console': {'class': 'logging.StreamHandler', 'formatter': 'simple'},
-        'file': {
-            'class': 'logging.FileHandler',
-            'formatter': 'simple',
-            'filename': LOG_DIR / 'admin.log',
-        },
-    },
-    'root': {'handlers': ['console', 'file'], 'level': 'INFO'},
+    'handlers': {'console': {'class': 'logging.StreamHandler', 'formatter': 'simple'}},
+    'root': {'handlers': ['console'], 'level': 'INFO'},
 }
 
 
@@ -192,6 +185,4 @@ LOGGING = {
 PAGINATION_PER_PAGE = 10
 
 # Create logs directory if it doesn't exist
-os.makedirs(BASE_DIR / 'logs', exist_ok=True)
-
-
+# os.makedirs(BASE_DIR / 'logs', exist_ok=True)
