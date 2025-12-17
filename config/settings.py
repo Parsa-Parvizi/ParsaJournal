@@ -9,9 +9,9 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Security Settings
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-$sb=%hp(o64%4gthyfscor*g7ze=$#$w-hj6x(!n99wxm8(7ad')
+SECRET_KEY = django-insecure-$sb=%hp(o64%4gthyfscor*g7ze=$#$w-hj6x(!n99wxm8(7ad
 DEBUG = False
-ALLOWED_HOSTS = https://parsajournal.liara.run/
+ALLOWED_HOSTS = 0.0.0.0
 
 # Admin Security Settings
 ADMIN_IP_WHITELIST = os.getenv('ADMIN_IP_WHITELIST', '').split(',') if os.getenv('ADMIN_IP_WHITELIST') else []
