@@ -176,37 +176,25 @@ LOGGING = {
     'disable_existing_loggers': False,
 
     'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
-        },
         'simple': {
-            'format': '{levelname} {message}',
+            'format': '[{asctime}] {levelname} {name}: {message}',
             'style': '{',
         },
     },
 
     'handlers': {
         'console': {
-            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
         },
     },
 
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-        'core.admin_security': {
-            'handlers': ['console'],
-            'level': 'WARNING',
-            'propagate': False,
-        },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
     },
 }
+
 
 
 # Pagination
