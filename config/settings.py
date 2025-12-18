@@ -1,21 +1,24 @@
 from pathlib import Path
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
+DEBUG = False
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# if DEBUG:
+#     from dotenv import load_dotenv
+#     load_dotenv()
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Security Settings
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-$sb=%hp(o64%4gthyfscor*g7ze=$#$w-hj6x(!n99wxm8(7ad')  # حتماً در Liara از env تنظیم کن
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'  # پیش‌فرض False برای production
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'parsajournal.ir,www.parsajournal.ir,localhost,127.0.0.1').split(',')
-CSRF_TRUSTED_ORIGINS = [f'https://{host}' for host in ALLOWED_HOSTS if host not in ['localhost', '127.0.0.1']]  # برای جلوگیری از CSRF errors
+SECRET_KEY = os.getenv('SECRET_KEY')
 
+ALLOWED_HOSTS = ['ParsaJournal.liara.run',]
+CSRF_TRUSTED_ORIGINS = [f'https://{host}' for host in ALLOWED_HOSTS if host not in ['localhost', '127.0.0.1']]  # برای جلوگیری از CSRF errors
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 # Admin Security Settings
 ADMIN_IP_WHITELIST = os.getenv('ADMIN_IP_WHITELIST', '').split(',') if os.getenv('ADMIN_IP_WHITELIST') else []
-ADMIN_URL = os.getenv('ADMIN_URL', 'admin')  # Change admin URL for security
+ADMIN_URL = os.getenv('ADMIN_URL', 'admin')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -26,6 +29,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sitemaps',
     'django.contrib.sites',
+    'whitenoise.runserver_nostatic',
     
     # Local apps
     'admin_panel',
@@ -39,6 +43,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',  # Must be after SessionMiddleware and before CommonMiddleware
     'django.middleware.common.CommonMiddleware',
@@ -48,6 +53,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'admin_panel.middleware.AdminSecurityMiddleware',  # Custom admin security middleware
 ]
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 ROOT_URLCONF = 'config.urls'
 
@@ -76,11 +83,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'parsajournal_db'),
-        'USER': os.getenv('DB_USER', 'postgres'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'postgres'),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '5432'),
+        'NAME': os.getenv('DB_NAME',),
+        'USER': os.getenv('DB_USER',),
+        'PASSWORD': os.getenv('DB_PASSWORD',),
+        'HOST': os.environ['DB_HOST'],
+        'PORT': os.getenv('DB_PORT',),
         'OPTIONS': {
             'connect_timeout': 10,
             'options': '-c timezone=Asia/Tehran',
@@ -88,7 +95,8 @@ DATABASES = {
         'CONN_MAX_AGE': 600,  # Connection pooling: keep connections alive for 10 minutes
     }
 }
-
+# DATABASE_URL
+DB_HOST = os.environ['DB_HOST']
 # Custom User Model
 AUTH_USER_MODEL = 'accounts.User'
 
@@ -115,9 +123,9 @@ SITE_ID = 1
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-]
+
+if DEBUG:
+    STATICFILES_DIRS = [BASE_DIR / 'static']
 
 # Media files
 MEDIA_URL = '/media/'
@@ -125,79 +133,67 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Email Configuration
-EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
-EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
-EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'False').lower() == 'true'
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@parsajournal.ir')
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
 
-# Cache Configuration (Redis recommended for production; fallback to LocMem)
-CACHES = {
-    'default': {
-        'BACKEND': os.getenv('CACHE_BACKEND', 'django.core.cache.backends.redis.RedisCache'),
-        'LOCATION': os.getenv('CACHE_LOCATION', 'redis://127.0.0.1:6379/1'),  # تنظیم کن اگر Liara Redis بده
-        'TIMEOUT': int(os.getenv('CACHE_TIMEOUT', 300)),
-        'OPTIONS': {
-            'MAX_ENTRIES': int(os.getenv('CACHE_MAX_ENTRIES', 1000)),
-        }
-    }
-}
+# Email Configuration
+# EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+# EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+# EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+# EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
+# EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'False').lower() == 'true'
+# EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+# EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+# DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@parsajournal.ir')
+
+# # Cache Configuration (Redis recommended for production; fallback to LocMem)
+# CACHES = {
+#     'default': {
+#         'BACKEND': os.getenv('CACHE_BACKEND', 'django.core.cache.backends.redis.RedisCache'),
+#         'LOCATION': os.getenv('CACHE_LOCATION', 'redis://127.0.0.1:6379/1'),  # تنظیم کن اگر Liara Redis بده
+#         'TIMEOUT': int(os.getenv('CACHE_TIMEOUT', 300)),
+#         'OPTIONS': {
+#             'MAX_ENTRIES': int(os.getenv('CACHE_MAX_ENTRIES', 1000)),
+#         }
+#     }
+# }
 
 # Session Configuration
-SESSION_COOKIE_AGE = int(os.getenv('SESSION_COOKIE_AGE', 1209600))  # 2 weeks
-SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'True').lower() == 'true'  # پیش‌فرض True برای HTTPS
-SESSION_SAVE_EVERY_REQUEST = True
+# SESSION_COOKIE_AGE = int(os.getenv('SESSION_COOKIE_AGE', 1209600))  # 2 weeks
+# SESSION_COOKIE_HTTPONLY = True
+# SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'True').lower() == 'true'  # پیش‌فرض True برای HTTPS
+# SESSION_SAVE_EVERY_REQUEST = True
 
 # Security Settings (فعال برای production)
-SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True').lower() == 'true'
-CSRF_COOKIE_SECURE = True
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-X_FRAME_OPTIONS = 'DENY'
-SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', 31536000))  # 1 year
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
+# SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True').lower() == 'true'
+# CSRF_COOKIE_SECURE = True
+# SECURE_BROWSER_XSS_FILTER = True
+# SECURE_CONTENT_TYPE_NOSNIFF = True
+# X_FRAME_OPTIONS = 'DENY'
+# SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', 31536000))  # 1 year
+# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+# SECURE_HSTS_PRELOAD = True
 
-# Logging Configuration (فقط console برای جلوگیری از مشکلات read-only FS)
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
     'handlers': {
         'console': {
-            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            'formatter': 'simple',
         },
-        # Handlerهای فایل حذف شدند برای جلوگیری از خطای read-only FS
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
     },
     'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-        'core.admin_security': {
-            'handlers': ['console'],
-            'level': 'WARNING',
-            'propagate': False,
-        },
+    'django.request': {
+        'handlers': ['console'],
+        'level': 'ERROR',
+        'propagate': False,
     },
 }
+}
+
 
 # Pagination
 PAGINATION_PER_PAGE = 10
