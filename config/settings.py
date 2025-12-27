@@ -1,24 +1,26 @@
 from pathlib import Path
 import os
+# import dj_database_url
+# import loadenv from loadenv
+import environ
 
-DEBUG = False
 
-# if DEBUG:
-#     from dotenv import load_dotenv
-#     load_dotenv()
-
+# BASE_DIR = Path(__file__).resolve().parent.parent / 'Journal'
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Security Settings
-SECRET_KEY = os.getenv('SECRET_KEY')
+env = environ.Env(
+    DEBUG=(bool, False)
+)
+env.read_env(str(BASE_DIR / '.env'))
 
-ALLOWED_HOSTS = ['ParsaJournal.liara.run',]
-CSRF_TRUSTED_ORIGINS = [f'https://{host}' for host in ALLOWED_HOSTS if host not in ['localhost', '127.0.0.1']]  # برای جلوگیری از CSRF errors
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
-# Admin Security Settings
-ADMIN_IP_WHITELIST = os.getenv('ADMIN_IP_WHITELIST', '').split(',') if os.getenv('ADMIN_IP_WHITELIST') else []
-ADMIN_URL = os.getenv('ADMIN_URL', 'admin')
+DEBUG = True
+# Security Settings
+SECRET_KEY = env('DJANGO_SECRET_KEY')
+
+ROOT_URLCONF = 'config.urls'
+
+
+# BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -29,7 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sitemaps',
     'django.contrib.sites',
-    'whitenoise.runserver_nostatic',
+    # 'whitenoise.runserver_nostatic',
     
     # Local apps
     'admin_panel',
@@ -43,7 +45,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    # 'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',  # Must be after SessionMiddleware and before CommonMiddleware
     'django.middleware.common.CommonMiddleware',
@@ -53,10 +55,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'admin_panel.middleware.AdminSecurityMiddleware',  # Custom admin security middleware
 ]
-
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
     {
@@ -77,28 +75,12 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'config.wsgi.application'
-
-# PostgreSQL Database Configuration
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME',),
-        'USER': os.getenv('DB_USER',),
-        'PASSWORD': os.getenv('DB_PASSWORD',),
-        'HOST': os.environ['DB_HOST'],
-        'PORT': os.getenv('DB_PORT',),
-        'OPTIONS': {
-            'connect_timeout': 10,
-            'options': '-c timezone=Asia/Tehran',
-        },
-        'CONN_MAX_AGE': 600,  # Connection pooling: keep connections alive for 10 minutes
-    }
-}
-# DATABASE_URL
-DB_HOST = os.environ['DB_HOST']
-# Custom User Model
 AUTH_USER_MODEL = 'accounts.User'
+
+LANGUAGE_CODE = 'en'
+TIME_ZONE = 'Asia/Tehran'
+
+WSGI_APPLICATION = 'config.wsgi.application'
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',},
@@ -107,8 +89,19 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',},
 ]
 
-LANGUAGE_CODE = 'en'
-TIME_ZONE = 'Asia/Tehran'
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         default=os.environ.get('DATABASE_URL')
+#     )
+# }
+
 USE_I18N = True
 USE_TZ = True
 
@@ -123,18 +116,13 @@ SITE_ID = 1
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-
-if DEBUG:
-    STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = [BASE_DIR / 'static']
 
 # Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = True
 
 # Email Configuration
 # EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
@@ -174,25 +162,25 @@ SECURE_SSL_REDIRECT = True
 # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 # SECURE_HSTS_PRELOAD = True
 
-LOGGING = {
-    'version': 1,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'root': {
-        'handlers': ['console'],
-        'level': 'INFO',
-    },
-    'loggers': {
-    'django.request': {
-        'handlers': ['console'],
-        'level': 'ERROR',
-        'propagate': False,
-    },
-}
-}
+# LOGGING = {
+#     'version': 1,
+#     'handlers': {
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#         },
+#     },
+#     'root': {
+#         'handlers': ['console'],
+#         'level': 'INFO',
+#     },
+#     'loggers': {
+#     'django.request': {
+#         'handlers': ['console'],
+#         'level': 'ERROR',
+#         'propagate': False,
+#         },
+#     }
+# }
 
 
 # Pagination
