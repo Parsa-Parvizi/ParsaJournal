@@ -1,3 +1,0 @@
-DEBUG=False
-SECRET_KEY=+$^t*m09mnw24gvyveraf)%0^db-vfymaqqbqe*q04yt+2e=v$
-POSTGRES_DB=prod
